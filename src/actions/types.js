@@ -12,3 +12,4 @@ export const ADD_USER_LAT_LONG = "ADD_USER_LAT_LONG";
 export const ADD_USER_ADDRESS = "ADD_USER_ADDRESS";
 
 export const ADD_HISTORY = "ADD_HISTORY";
+export const CLEAR_HISTORY = "CLEAR_HISTORY";

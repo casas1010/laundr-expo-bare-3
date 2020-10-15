@@ -69,7 +69,7 @@ const WelcomeScreen = (props) => {
     }
     onAuthComplete(props);
   }, [props.token]);
-  
+
   const onAuthComplete = (props) => {
     // console.log("props.token  :", props.token);
     if (props.token) {
@@ -198,6 +198,20 @@ const WelcomeScreen = (props) => {
                 Forgot Password?
               </Text>
             </TouchableOpacity>
+
+            {/* REMOVE ME */}
+
+            <TouchableOpacity
+              onPress={() => {
+                console.log(props.user)
+              }}
+            >
+              <Text style={[BUTTON_TEXT, { color: "black" }]}>
+                check store
+              </Text>
+            </TouchableOpacity>
+
+            {/*  */}
           </View>
         </View>
       </KeyboardAwareScrollView>
@@ -229,7 +243,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width:WIDTH,
+    width: WIDTH,
     // backgroundColor:'green'
   },
   button: {
@@ -246,8 +260,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function mapStateToProps({ auth }) {
-  return { token: auth.token };
+function mapStateToProps({ auth, user }) {
+  return { token: auth.token, user };
 }
 
 export default connect(mapStateToProps, actions)(WelcomeScreen);

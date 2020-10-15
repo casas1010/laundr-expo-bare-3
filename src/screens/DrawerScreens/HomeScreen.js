@@ -251,13 +251,14 @@ const HomeScreen = (props) => {
           <Marker coordinate={newRegion} />
         </MapView>
         <View style={styles.topInputs_ButtonContainer}>
-          <TouchableOpacity
+        <TouchableOpacity
             onPress={props.navigation.openDrawer}
-            style={{ backgroundColor: "red" }}
+            // style={{ backgroundColor: "red" }}
           >
             {/* <Image source={require("../../assets/spinner.png")} /> */}
             <Entypo name="menu" size={50} color="#01c9e2" />
           </TouchableOpacity>
+    
           <>
             <SearchBar
               term={address}
@@ -286,6 +287,10 @@ const HomeScreen = (props) => {
               style={{ width: WIDTH * 0.4 }}
               text="No Card"
             />
+
+
+
+
 
             <BUTTON
               onPress={() => {

@@ -1,102 +1,3 @@
-// import { AsyncStorage } from "react-native";
-// import {
-//   EMAIL_LOGIN_SUCCESS,
-//   EMAIL_LOGIN_FAIL,
-//   LOG_OUT,
-//   CLEAR_DATA,
-//   ADD_USER_INFORMATION,
-//   GET_CARD_DETAILS,
-// } from "./types";
-// import jwt_decode from "jwt-decode";
-// import axios from "axios";
-// import * as SecureStore from "expo-secure-store";
-// import { fetchPaymentInfo, addUserInformation } from "./user_actions";
-// import { fetchOrders } from "../actions/history_actions";
-// import { BASE_URL } from "../key/";
-
-// export const emailLogOut = (props) => async (dispatch) => {
-//   await AsyncStorage.removeItem("token");
-//   console.log("token has been cleared from phone");
-//   props.navigate("Home");
-//   props.navigate("welcome");
-//   dispatch({ type: CLEAR_DATA });
-//   dispatch({ type: LOG_OUT });
-// };
-
-// export const getUserCredentialsAndToken = (props) => async (dispatch) => {
-//   console.log("getUserCredentialsAndToken() action invoked");
-
-//   let token = await AsyncStorage.getItem("userCredentials")
-
-//   if (token) {
-//     console.log("token is present");
-//     //   // dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-//   } else {
-//     console.log("token not present");
-//     await checkUserCredentials(props);
-//   }
-// };
-
-// const checkUserCredentials = async (props) => {
-//   console.log("checkUserCredentials() action helper invoked");
-
-//   try {
-//     const response = await axios.post(BASE_URL + "/api/user/login/", {
-//       email: props.email.toLowerCase(),
-//       password: props.password,
-//     });
-//     if (response.data.success) {
-//       console.log(
-//         "checkUserCredentials() action helper has received a positive response"
-//       );
-//       let token = response.data.token;
-
-//       await AsyncStorage.setItem("userCredentials", {
-//         email: props.email.toLowerCase(),
-//         password: props.password,
-//       });
-//       dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-
-//       dispatch(fetchUserData(token));
-//       console.log("checkUserCredentials() action helper complete");
-//     } else {
-//       console.log(
-//         "checkUserCredentials() action helper has received a negative response"
-//       );
-//       console.log("returning null");
-//       console.log("checkUserCredentials() action helper complete");
-//     }
-//   } catch (error) {
-//     console.log(
-//       "checkUserCredentials() action helper has received a error response"
-//     );
-//     console.log("returning null");
-//     console.log("checkUserCredentials() action helper complete");
-//   }
-// };
-
-// const fetchUserData = (token) => async (dispatch) => {
-//   console.log("fetchUserData() action helper invoked");
-//   if (token == null) {
-//     console.log("Login failed, token has not been received");
-//     dispatch({ type: EMAIL_LOGIN_FAIL });
-//     return;
-//   }
-//   // await SecureStore.setItemAsync("password", token.password);
-
-//   await AsyncStorage.setItem("token", token);
-//   const data = jwt_decode(token);
-
-//   // get user about info from token
-//   dispatch(addUserInformation(data));
-//   // get information from stripe API
-
-//   //get user order history
-//   dispatch(fetchOrders(props.email.toLowerCase()));
-//   // store email and password locally
-
-//   dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-// };
 
 import { AsyncStorage } from "react-native";
 import {
@@ -104,6 +5,7 @@ import {
   EMAIL_LOGIN_FAIL,
   LOG_OUT,
   CLEAR_DATA,
+  CLEAR_HISTORY,
   ADD_USER_INFORMATION,
   GET_CARD_DETAILS,
 } from "./types";
@@ -115,13 +17,17 @@ import { fetchOrders } from "../actions/history_actions";
 import { BASE_URL } from "../key/";
 
 export const emailLogOut = (props) => async (dispatch) => {
-  // get the fb token if it is there
+  console.log("emailLogOut() action invoked");
+
   await AsyncStorage.removeItem("token");
+  await SecureStore.deleteItemAsync("password");
+
   console.log("token has been cleared from phone");
   props.navigate("Home");
   props.navigate("welcome");
   dispatch({ type: CLEAR_DATA });
   dispatch({ type: LOG_OUT });
+  dispatch({ type: CLEAR_HISTORY });
 };
 
 export const doAuthLogin = (props) => async (dispatch) => {

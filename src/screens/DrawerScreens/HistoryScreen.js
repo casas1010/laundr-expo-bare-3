@@ -124,6 +124,8 @@ const SearchScreen = (props) => {
                     <View style={styles.fieldValueContainer}>
                       <Text style={styles.fieldValueTxT}>
                         {item.orderInfo.created.slice(0, 10)}
+                        {/* {item.orderInfo.created} */}
+
                       </Text>
                     </View>
                   </View>

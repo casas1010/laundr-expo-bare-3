@@ -36,6 +36,7 @@ import {
   FIELD_NAME_TEXT,
   FIELD_VALUE_TEXT,
   FIELD_VALUE_CONTAINER,
+  BUTTON_TEXT,
 } from "../../components/Items/";
 import { CITIES } from "../../components/Data/";
 
@@ -59,10 +60,10 @@ const AccountScreen = (props) => {
   const [cityModalView, setCityModalView] = useState(false);
 
   useEffect(() => {
-    console.log("AccountScreen useEffect []");
+    console.log("AccountScreen useEffect ");
     setUserValues();
     setLoading(false);
-  }, []);
+  });
 
   useEffect(() => {
     setEditable(!editable);
@@ -100,6 +101,7 @@ const AccountScreen = (props) => {
     <Text>LOADING</Text>
   ) : (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
+
       <Header openDrawer={props.navigation.openDrawer} name="Account" />
       {/* SCREEN LOCK  */}
       <TouchableOpacity
@@ -117,6 +119,16 @@ const AccountScreen = (props) => {
         )}
       </TouchableOpacity>
       {/* SCREEN LOCK  */}
+
+            {/* REMOVE ME */}
+            <TouchableOpacity
+        onPress={() => {
+          console.log(props.user);
+        }}
+      >
+        <Text style={[BUTTON_TEXT, { color: "black" }]}>check store</Text>
+      </TouchableOpacity>
+      {/* REMOVE ME */}
       <KeyboardAwareScrollView
         resetScrollToCoords={{ x: 0, y: 0 }}
         contentContainerStyle={styles.container}
