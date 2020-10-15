@@ -56,8 +56,8 @@ const WelcomeScreen = (props) => {
   // REDUX LOGIN FLOW
   const loginWithEmail = async () => {
     console.log("loginWithEmail() initiated");
-    props.emailLogin({ email, password, userType });
-    onAuthComplete(props);
+    props.emailLogin({ email, password, props });
+    // onAuthComplete(props);
     console.log("emailLogin() complete");
   };
 

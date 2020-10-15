@@ -22,7 +22,8 @@ const AuthScreen = (props) => {
   useEffect(() => {
     async function locationAndTokenFlow() {
       await props.getUserLocation();
-      checkToken();
+      props.doAuthLogin(props)
+      // checkToken();
     }
     locationAndTokenFlow();
   }, []);

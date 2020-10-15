@@ -9,10 +9,13 @@ import { GOOGLE_MAPS_KEY, BASE_URL } from "../key";
 import axios from "axios";
 // fetchPaymentInfo(data.stripe.regPaymentID, dispatch);
 
+
+
+
+
 export const addUserInformation = (data) => (dispatch) => {
   console.log("addUserInformation() action invoked");
   fetchPaymentInfo(data.stripe.regPaymentID, dispatch);
-  console.log('DATA:  ',data)
   dispatch({
     type: ADD_USER_INFORMATION,
     payload: data,
