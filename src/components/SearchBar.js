@@ -11,11 +11,14 @@ const SearchBar = ({
   searchIconStyle,
   xIconStyle,
   onFocus,
-  onBlur
+  onBlur,
 }) => {
   return (
     <View style={[styles.backgroundStyle, { ...backgroundStyle }]}>
-      <Feather name="search" style={[styles.iconStyle, { ...searchIconStyle }]} />
+      <Feather
+        name="search"
+        style={[styles.iconStyle, { ...searchIconStyle }]}
+      />
       <TextInput
         autoCapitalize="none"
         autoCorrect={false}
@@ -28,8 +31,8 @@ const SearchBar = ({
           // onTermSubmit(term);
         }}
         onEndEditing={onTermSubmit}
-        onFocus={()=>onFocus()}
-        onBlur={()=>onBlur()}
+        onFocus={() => onFocus()}
+        onBlur={() => onBlur()}
       />
       <TouchableOpacity
         style={{ alignItems: "center", justifyContent: "center" }}
@@ -41,17 +44,16 @@ const SearchBar = ({
           name="x"
           size={24}
           color="white"
-          style={{ paddingRight: 10,...xIconStyle }}
+          style={{ paddingRight: 10, ...xIconStyle }}
         />
       </TouchableOpacity>
     </View>
   );
 };
 
-SearchBar.defaultProps={
-  onBlur: console.log('onBlur fired')
-
-}
+SearchBar.defaultProps = {
+  onBlur: () => console.log("onBlur fired"),
+};
 
 const styles = StyleSheet.create({
   backgroundStyle: {
