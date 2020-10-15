@@ -35,17 +35,20 @@ const BUTTON_WIDTH = SCREEN_WIDTH * 0.3;
 const SearchScreen = (props) => {
   const [term, setTerm] = useState("");
   const [DATA, SETDATA] = useState([]);
+  const [count,setCount]=useState(1)
 
   useEffect(() => {
     console.log("SearchScreen");
     // console.log(props.history);
     modifyData();
+   
+    console.log('props.history.length:   ',props.history.length);
   }, []);
 
   const modifyData = () => {
     let newData = [];
     let uniqueCounter = 1;
-    // console.log('count prior to mod:  ',props.history.le)
+    console.log("count prior to mod:  ", props.history.length);
     props.history.forEach((item) => {
       // console.log("element before being modified: ", item.orderInfo.created);
       item.orderInfo.orderID = "0" + uniqueCounter;
@@ -61,9 +64,14 @@ const SearchScreen = (props) => {
 
   const filterHistoriesByName = (name) => {
     name = name.toLowerCase();
-    return props.history.filter((item) => {
-      let string_copy = (" " + item.string).slice(1);
-      if (string_copy.includes(name)) {
+    let localCount = 1;
+    // console.log('localCount:  ',localCount)
+    // console.log('filterHistoriesByName props.history.length:  ',props.history.length)
+    return DATA.filter((item) => {
+      // console.log('inside filter: localCount ',localCount);
+      // localCount++
+  
+      if (item.string.includes(name)) {
         return item;
       }
     });
@@ -80,14 +88,17 @@ const SearchScreen = (props) => {
           console.log(`term searched is ${term}`);
         }}
       />
+<Text>{props.history.length}</Text>
       <>
         <FlatList
           horizontal={false}
-          extraData={DATA}
+          // extraData={props.history}
           showsHorizontalScrollIndicator={false}
+          // data={DATA}
           data={filterHistoriesByName(term)}
-          keyExtractor={(item) => item.orderInfo.created}
+          keyExtractor={(item) => item.orderInfo.orderID}
           renderItem={({ item }) => {
+    
             return (
               <>
                 <Container style={{ padding: 0, position: "relative" }}>
@@ -116,6 +127,8 @@ const SearchScreen = (props) => {
                     </View>
                   </View>
                   {/*  */}
+           
+          
                   {/*  */}
                   <View style={[styles.fieldContainer, { paddingTop: 50 }]}>
                     <View style={styles.fieldNameContainer}>
@@ -125,7 +138,6 @@ const SearchScreen = (props) => {
                       <Text style={styles.fieldValueTxT}>
                         {item.orderInfo.created.slice(0, 10)}
                         {/* {item.orderInfo.created} */}
-
                       </Text>
                     </View>
                   </View>
@@ -269,10 +281,13 @@ const SearchScreen = (props) => {
                   {/*  */}
                 </Container>
               </>
+              
             );
           }}
         />
       </>
+  
+  
     </SafeAreaView>
   );
 };

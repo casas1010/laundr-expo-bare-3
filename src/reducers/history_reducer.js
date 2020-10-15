@@ -1,13 +1,14 @@
-import { ADD_HISTORY,CLEAR_HISTORY } from "../actions/types";
+import { ADD_HISTORY, CLEAR_HISTORY } from "../actions/types";
 
 const cartReducer = (state = [], action) => {
   switch (action.type) {
     case ADD_HISTORY:
       console.log("ADD_HISTORY reducer invoked");
-      return [...state, ...action.payload];
+      console.log("amount of history records:  ", action.payload.length);
+      return [...action.payload];
     case CLEAR_HISTORY:
       console.log("CLEAR_HISTORY reducer invoked");
-      return []
+      return [];
     default:
       return state;
   }
