@@ -35,14 +35,14 @@ const BUTTON_WIDTH = SCREEN_WIDTH * 0.3;
 const SearchScreen = (props) => {
   const [term, setTerm] = useState("");
   const [DATA, SETDATA] = useState([]);
-  const [count,setCount]=useState(1)
+  const [count, setCount] = useState(1);
 
   useEffect(() => {
     console.log("SearchScreen");
     // console.log(props.history);
+
     modifyData();
-   
-    console.log('props.history.length:   ',props.history.length);
+    console.log(props.history[0]);
   }, []);
 
   const modifyData = () => {
@@ -70,7 +70,7 @@ const SearchScreen = (props) => {
     return DATA.filter((item) => {
       // console.log('inside filter: localCount ',localCount);
       // localCount++
-  
+
       if (item.string.includes(name)) {
         return item;
       }
@@ -88,17 +88,16 @@ const SearchScreen = (props) => {
           console.log(`term searched is ${term}`);
         }}
       />
-<Text>{props.history.length}</Text>
       <>
         <FlatList
           horizontal={false}
           // extraData={props.history}
           showsHorizontalScrollIndicator={false}
           // data={DATA}
+          // data={props.history}
           data={filterHistoriesByName(term)}
           keyExtractor={(item) => item.orderInfo.orderID}
           renderItem={({ item }) => {
-    
             return (
               <>
                 <Container style={{ padding: 0, position: "relative" }}>
@@ -127,8 +126,7 @@ const SearchScreen = (props) => {
                     </View>
                   </View>
                   {/*  */}
-           
-          
+
                   {/*  */}
                   <View style={[styles.fieldContainer, { paddingTop: 50 }]}>
                     <View style={styles.fieldNameContainer}>
@@ -277,17 +275,26 @@ const SearchScreen = (props) => {
                       </Text>
                     </View>
                   </View>
+          
                   {/*  */}
+                  <DIVIDER />
                   {/*  */}
+                  <View style={styles.fieldContainer}>
+                    <View style={styles.fieldNameContainer}>
+                      <Text style={styles.fieldNameTxT}>Cost</Text>
+                    </View>
+                    <View style={styles.fieldValueContainer}>
+                      <Text style={styles.fieldValueTxT}>
+                        $ {item.orderInfo.cost}
+                      </Text>
+                    </View>
+                  </View>
                 </Container>
               </>
-              
             );
           }}
         />
       </>
-  
-  
     </SafeAreaView>
   );
 };
