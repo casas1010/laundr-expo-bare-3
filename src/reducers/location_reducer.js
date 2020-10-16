@@ -28,7 +28,6 @@ const locationReducer = (state = {}, action) => {
     case ADD_DEFAULT_ADDRESS:
       console.log("ADD_DEFAULT_ADDRESS reducer invoked");
       return { ...state, address: DEFAULT_ADDRESS };
-
     default:
       return state;
   }

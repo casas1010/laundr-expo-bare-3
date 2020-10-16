@@ -11,8 +11,8 @@ import {
 import jwt_decode from "jwt-decode";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import {  addUserInformation } from "./user_actions";
-import {fetchPaymentInfo} from './payment_actions'
+import { addUserInformation } from "./user_actions";
+import { fetchPaymentInfo } from "./payment_actions";
 import { fetchOrders } from "../actions/history_actions";
 import { BASE_URL } from "../key/";
 
@@ -65,7 +65,6 @@ export const doAuthLogin = (props) => async (dispatch) => {
         dispatch(fetchOrders(email.toLowerCase()));
 
         dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-       
 
         setTimeout(() => {
           console.log("navigating user to drawer");
@@ -94,12 +93,6 @@ export const doAuthLogin = (props) => async (dispatch) => {
   }
 };
 
-
-
-
-
-
-
 export const emailLogin = (props) => async (dispatch) => {
   console.log("emailLogin() action invoked");
   let token = await AsyncStorage.getItem("token");
@@ -114,43 +107,60 @@ export const emailLogin = (props) => async (dispatch) => {
     dispatch(doEmailLogin(props));
   }
 };
+
+const validateEmail = (email) => {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+};
+
+const validatePassword = (password) => {
+  return true;
+};
+
 export const doEmailLogin = (props) => async (dispatch) => {
   console.log("doEmailLogin() action helper invoked");
-  // if (this.handleInputValidation()) {   // UNCOMMENT ME
 
-  try {
-    //const response = await axios.post("http://192.168.1.69:5000/api/user/login", {
-    const response = await axios.post(BASE_URL + "/api/user/login/", {
-      email: props.email.toLowerCase(),
-      password: props.password,
-    });
-    if (response.data.success) {
-      const token = response.data.token;
+  if (validateEmail(props.email) && validatePassword(props.password)) {
+    console.log('Email and password have valid syntax')
 
-      await AsyncStorage.setItem("token", token);
-      await SecureStore.setItemAsync("password", props.password);
-      const data = jwt_decode(token);
+    try {
+      //const response = await axios.post("http://192.168.1.69:5000/api/user/login", {
+      const response = await axios.post(BASE_URL + "/api/user/login/", {
+        email: props.email.toLowerCase(),
+        password: props.password,
+      });
+      if (response.data.success) {
+        const token = response.data.token;
 
-      dispatch(addUserInformation(data));
-      dispatch(fetchPaymentInfo(data));
+        await AsyncStorage.setItem("token", token);
+        await SecureStore.setItemAsync("password", props.password);
+        const data = jwt_decode(token);
 
-      dispatch(fetchOrders(props.email.toLowerCase()));
+        dispatch(addUserInformation(data));
+        dispatch(fetchPaymentInfo(data));
 
-      dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-      props.navigation.navigate("drawer")
+        dispatch(fetchOrders(props.email.toLowerCase()));
 
-      return;
-    } else {
-      console.log("Login failed, token has not been received");
+        dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
+        props.navigation.navigate("drawer");
 
+        return;
+      } else {
+        console.log("Login failed, token has not been received");
+
+        dispatch({ type: EMAIL_LOGIN_FAIL });
+        return;
+      }
+    } catch (error) {
+      console.log("Login failed, there has been an error in the request");
+
+      console.log(error);
       dispatch({ type: EMAIL_LOGIN_FAIL });
       return;
     }
-  } catch (error) {
-    console.log("Login failed, there has been an error in the request");
+  } else {
+    alert("There is an issue with the email or password inputed");
+    console.log('Email and password dont have valid syntax')
 
-    console.log(error);
-    dispatch({ type: EMAIL_LOGIN_FAIL });
-    return;
   }
 };
