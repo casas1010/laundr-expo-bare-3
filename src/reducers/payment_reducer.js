@@ -1,6 +1,17 @@
 import { GET_CARD_DETAILS } from "../actions/types";
 
-const paymentReducer = (state = {}, action) => {
+const PAYMENT_DETAILS = {
+  cardInfo: {
+    brand: null,
+    customerID: null,
+    expMonth: null,
+    expYear: null,
+    lastFour: null,
+    regPaymentID: null,
+  },
+};
+
+const paymentReducer = (state = PAYMENT_DETAILS, action) => {
   switch (action.type) {
     case GET_CARD_DETAILS:
       console.log("GET_CARD_DETAILS reducer invoked");

@@ -230,6 +230,13 @@ const HomeScreen = (props) => {
     });
   };
 
+  useEffect(() => {
+    checkPaymentCard();
+  }, {});
+  const checkPaymentCard = () => {
+    console.log("payment details:  ", props.payment);
+  };
+
   return (
     <View style={styles.container}>
       {/* <KeyboardAwareScrollView
@@ -240,7 +247,6 @@ const HomeScreen = (props) => {
       <MapView
         style={styles.mapStyle}
         region={newRegion}
-        
         ref={(ref) => (this.mapView = ref)}
         zoomEnabled={true}
         showsUserLocation={true}
@@ -385,8 +391,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function mapStateToProps({ location }) {
-  return { location };
+function mapStateToProps({ location, payment }) {
+  return { location, payment };
 }
 // export default HomeScreen;
 export default connect(mapStateToProps)(HomeScreen);
