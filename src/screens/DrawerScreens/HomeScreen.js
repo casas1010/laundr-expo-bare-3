@@ -57,7 +57,7 @@ const HomeScreen = (props) => {
   }, []);
   const setUserLocation = async () => {
     console.log("setUserLocation() initiated");
-    const userLocation = await props.user.address;
+    const userLocation = await props.location.address;
     console.log("setting userAddress state variable:   ", userLocation);
     setUserAddress(userLocation);
     console.log("setting address state variable");
@@ -69,8 +69,8 @@ const HomeScreen = (props) => {
     console.log("goToInitialLocation() initiated");
 
     let initialRegion = {
-      latitude: props.user.location.latitude,
-      longitude: props.user.location.longitude,
+      latitude: props.location.location.latitude,
+      longitude: props.location.location.longitude,
     };
     initialRegion["latitudeDelta"] = 0.005; // sets zoom level
     initialRegion["longitudeDelta"] = 0.005; // sets zoom level
@@ -256,7 +256,7 @@ const HomeScreen = (props) => {
             // style={{ backgroundColor: "red" }}
           >
             {/* <Image source={require("../../assets/spinner.png")} /> */}
-            <Entypo name="menu" size={50} color="#01c9e2" />
+            <Entypo name="menu" size={50} color="#01c9e2" style={{marginLeft:10}} />
           </TouchableOpacity>
     
           <>
@@ -385,8 +385,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function mapStateToProps({ user }) {
-  return { user };
+function mapStateToProps({ location }) {
+  return { location };
 }
 // export default HomeScreen;
 export default connect(mapStateToProps)(HomeScreen);

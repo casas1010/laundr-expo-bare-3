@@ -4,50 +4,7 @@ import {
   ADD_USER_LAT_LONG,
   ADD_USER_ADDRESS,
   CLEAR_DATA,
-  GET_CARD_DETAILS,
 } from "../actions/types";
-
-/*
-DATA SAMPLE
-const userData = {
-  __v: 0,
-  _id: "5ed3503612101f55ec36a254",
-  city: "Gainesville",
-  email: "u1@gmail.com",
-  fname: "User",
-  iat: 1602605480,
-  isAdmin: false,
-  isDriver: false,
-  isWasher: false,
-  lname: "One",
-  phone: "1111111111",
-  stripe: {
-    customerID: "cus_HNVnKreHoaWvzt",
-    regPaymentID: "pm_1HK9jeCmyk9ubtk6TFdHASKC",
-  },
-  subscription: {
-    _id: "5ed9fd8a840f485f984ba1f3",
-    anchorDate: "2020-06-05T04:08:36-04:00",
-    id: "sub_HPPQcwu8O9SEuN",
-    lbsLeft: 0,
-    periodEnd: "2020-07-05T04:08:36-04:00",
-    periodStart: "2020-06-05T04:08:36-04:00",
-    plan: "Plus",
-    startDate: "2020-06-05T04:08:36-04:00",
-    status: "cancelled",
-  },
-  usedReferral: "",
-
-  // these to properties are added by the phone to find the users location in homepage
-  location: {
-    latitude: null,
-    longitude: null,
-  },
-  address: null,
-};
-
-
-*/
 
 const userData = {
   __v: undefined,
@@ -94,7 +51,7 @@ const userData = {
   },
 };
 
-const userReducer = (state = userData, action) => {
+const userReducer = (state = {}, action) => {
   switch (action.type) {
     case ADD_USER_INFORMATION:
       console.log("ADD_USER_INFORMATION reducer invoked");
@@ -121,11 +78,6 @@ const userReducer = (state = userData, action) => {
       console.log("CLEAR_DATA reducer invoked");
       return {};
 
-    case GET_CARD_DETAILS:
-      console.log("GET_CARD_DETAILS reducer invoked");
-      // console.log("state:  ", state);
-      console.log("cardInfo:  ", action.payload);
-      return { ...state, cardInfo: action.payload };
     default:
       return state;
   }

@@ -1,4 +1,3 @@
-
 import { AsyncStorage } from "react-native";
 import {
   EMAIL_LOGIN_SUCCESS,
@@ -12,7 +11,8 @@ import {
 import jwt_decode from "jwt-decode";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { fetchPaymentInfo, addUserInformation } from "./user_actions";
+import {  addUserInformation } from "./user_actions";
+import {fetchPaymentInfo} from './payment_actions'
 import { fetchOrders } from "../actions/history_actions";
 import { BASE_URL } from "../key/";
 
@@ -51,9 +51,6 @@ export const doAuthLogin = (props) => async (dispatch) => {
       });
       console.log("response.data.success: ", response.data.success);
       if (response.data.success) {
-        console.log("inside positive response");
-        console.log("hell yea, print props:  ", props);
-        console.log(props.navigation.navigate("drawer"));
         const token = response.data.token;
 
         // await AsyncStorage.setItem("token", token);
@@ -63,12 +60,13 @@ export const doAuthLogin = (props) => async (dispatch) => {
         // console.log("data from token:  ", data.email);
 
         dispatch(addUserInformation(data));
+        dispatch(fetchPaymentInfo(data));
 
         dispatch(fetchOrders(email.toLowerCase()));
 
         dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-        // console.log('hell yea, print props:  ',props)
-        // console.log(props.props.navigation.navigate("drawer"));
+        console.log("inside positive response");
+        console.log(props.navigation.navigate("drawer"));
 
         return;
       } else {
@@ -92,11 +90,15 @@ export const doAuthLogin = (props) => async (dispatch) => {
   }
 };
 
+
+
+
+
+
+
 export const emailLogin = (props) => async (dispatch) => {
   console.log("emailLogin() action invoked");
-  // get the token token if it is there
   let token = await AsyncStorage.getItem("token");
-  // check the value of that token
   if (token) {
     console.log("token is present");
     console.log("decoding token and checking crendetials");
@@ -125,13 +127,13 @@ export const doEmailLogin = (props) => async (dispatch) => {
       await SecureStore.setItemAsync("password", props.password);
       const data = jwt_decode(token);
 
-      console.log("data from token:  ", data.email);
-
       dispatch(addUserInformation(data));
+      dispatch(fetchPaymentInfo(data));
 
       dispatch(fetchOrders(props.email.toLowerCase()));
 
       dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
+      console.log(props.navigation.navigate("drawer"));
 
       return;
     } else {
@@ -147,5 +149,4 @@ export const doEmailLogin = (props) => async (dispatch) => {
     dispatch({ type: EMAIL_LOGIN_FAIL });
     return;
   }
-  console.log("weird");
 };
