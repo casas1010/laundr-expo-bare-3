@@ -13,5 +13,5 @@ export default combineReducers({
   user,
   history,
   payment,
-  location
+  location,
 });

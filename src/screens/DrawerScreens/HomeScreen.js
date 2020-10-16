@@ -25,7 +25,12 @@ import {
   verifyAddressIsInBounds,
 } from "../../components/LocationHelperFunctions";
 import Container from "../../components/Container";
-import { HEIGHT, WIDTH, SHADOW,KEYBOARD_AWARE_SCROLL_VIEW_STYLE } from "../../components/Items/";
+import {
+  HEIGHT,
+  WIDTH,
+  SHADOW,
+  KEYBOARD_AWARE_SCROLL_VIEW_STYLE,
+} from "../../components/Items/";
 import { GOOGLE_MAPS_KEY } from "../../key/";
 import SearchBar from "../../components/SearchBar";
 
@@ -61,19 +66,13 @@ const HomeScreen = (props) => {
     console.log("setting userAddress state variable:   ", userLocation);
     setUserAddress(userLocation);
     console.log("setting address state variable");
-    // setAddress("Services, Rec Center, Gainesville, FL, USA");  // delete me
     setAddress(userLocation);
     console.log("setUserLocation() complete");
   };
   function goToInitialLocation() {
     console.log("goToInitialLocation() initiated");
+    let initialRegion = props.location.location;
 
-    let initialRegion = {
-      latitude: props.location.location.latitude,
-      longitude: props.location.location.longitude,
-    };
-    initialRegion["latitudeDelta"] = 0.005; // sets zoom level
-    initialRegion["longitudeDelta"] = 0.005; // sets zoom level
     this.mapView.animateToRegion(initialRegion, 2000);
     console.log("goToInitialLocation() complete");
   }
@@ -238,69 +237,70 @@ const HomeScreen = (props) => {
         contentContainerStyle={{flex:1}}
         showsVerticalScrollIndicator={false}
       > */}
-        <MapView
-          style={styles.mapStyle}
-          region={newRegion}
-          // followUserLocation={true}
-          ref={(ref) => (this.mapView = ref)}
-          zoomEnabled={true}
-          showsUserLocation={true}
-          onMapReady={goToInitialLocation}
-          initialRegion={initialRegion}
-        >
-          <Marker coordinate={newRegion} />
-        </MapView>
-        <View style={styles.topInputs_ButtonContainer}>
+      <MapView
+        style={styles.mapStyle}
+        region={newRegion}
+        
+        ref={(ref) => (this.mapView = ref)}
+        zoomEnabled={true}
+        showsUserLocation={true}
+        onMapReady={goToInitialLocation}
+        initialRegion={initialRegion}
+      >
+        <Marker coordinate={newRegion} />
+      </MapView>
+      <View style={styles.topInputs_ButtonContainer}>
         <TouchableOpacity
-            onPress={props.navigation.openDrawer}
-            // style={{ backgroundColor: "red" }}
-          >
-            {/* <Image source={require("../../assets/spinner.png")} /> */}
-            <Entypo name="menu" size={50} color="#01c9e2" style={{marginLeft:10}} />
-          </TouchableOpacity>
-    
-          <>
-            <SearchBar
-              term={address}
-              onTermChange={(txt_address) => {
-                setAutoCompletePossibleLocations({
-                  ...autoCompletePossibleLocations,
-                  display: true,
-                });
-                setAddress(txt_address);
-              }}
-              onFocus={searchBarOnFocus}
-              // onBlur={searchBarOnBlur}
-            />
-            {/* old searchbar below, just in case this search bar does not work */}
+          onPress={props.navigation.openDrawer}
+          // style={{ backgroundColor: "red" }}
+        >
+          {/* <Image source={require("../../assets/spinner.png")} /> */}
+          <Entypo
+            name="menu"
+            size={50}
+            color="#01c9e2"
+            style={{ marginLeft: 10 }}
+          />
+        </TouchableOpacity>
 
-            {displayAutoCompletePossibleLocations()}
-          </>
+        <>
+          <SearchBar
+            term={address}
+            onTermChange={(txt_address) => {
+              setAutoCompletePossibleLocations({
+                ...autoCompletePossibleLocations,
+                display: true,
+              });
+              setAddress(txt_address);
+            }}
+            onFocus={searchBarOnFocus}
+            // onBlur={searchBarOnBlur}
+          />
+          {/* old searchbar below, just in case this search bar does not work */}
+
+          {displayAutoCompletePossibleLocations()}
+        </>
+      </View>
+      <View style={styles.bottomButtonsContainer}>
+        <BUTTON onPress={newOrder} text="New Order" />
+        <View style={styles.bottomInnerButtonsContainer}>
+          <BUTTON
+            // onPress={() => {
+            //   Linking.openURL("https://www.laundr.io/faq/");
+            // }}
+            style={{ width: WIDTH * 0.4 }}
+            text="No Card"
+          />
+
+          <BUTTON
+            onPress={() => {
+              Linking.openURL("https://www.laundr.io/faq/");
+            }}
+            style={{ width: WIDTH * 0.4 }}
+            text="FAQ"
+          />
         </View>
-        <View style={styles.bottomButtonsContainer}>
-          <BUTTON onPress={newOrder} text="New Order" />
-          <View style={styles.bottomInnerButtonsContainer}>
-            <BUTTON
-              // onPress={() => {
-              //   Linking.openURL("https://www.laundr.io/faq/");
-              // }}
-              style={{ width: WIDTH * 0.4 }}
-              text="No Card"
-            />
-
-
-
-
-
-            <BUTTON
-              onPress={() => {
-                Linking.openURL("https://www.laundr.io/faq/");
-              }}
-              style={{ width: WIDTH * 0.4 }}
-              text="FAQ"
-            />
-          </View>
-        </View>
+      </View>
       {/* </KeyboardAwareScrollView> */}
     </View>
   );

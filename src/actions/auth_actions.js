@@ -65,8 +65,12 @@ export const doAuthLogin = (props) => async (dispatch) => {
         dispatch(fetchOrders(email.toLowerCase()));
 
         dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-        console.log("inside positive response");
-        console.log(props.navigation.navigate("drawer"));
+       
+
+        setTimeout(() => {
+          console.log("navigating user to drawer");
+          props.navigation.navigate("drawer");
+        }, 3000);
 
         return;
       } else {
@@ -133,7 +137,7 @@ export const doEmailLogin = (props) => async (dispatch) => {
       dispatch(fetchOrders(props.email.toLowerCase()));
 
       dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-      console.log(props.navigation.navigate("drawer"));
+      props.navigation.navigate("drawer")
 
       return;
     } else {
