@@ -7,18 +7,20 @@ import {
   FlatList,
   TouchableOpacity,
   Button,
+  Dimensions,
   Image,
   TextInput,
   ScrollView,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import TimeModal from "../../components/TimeModal";
+import MapView, { Marker } from "react-native-maps";
+import { Entypo } from "@expo/vector-icons";
+import SearchBar from "../../components/SearchBar";
+import { GOOGLE_MAPS_KEY } from "../../key/";
+
 import {
-  getUserLocation,
-  getAddressFromLatLong,
   getLatLongFromAddress,
-  getDistanceFromLatLon,
-  checkIfUserIsInZone,
   verifyAddressIsInBounds,
 } from "../../components/LocationHelperFunctions";
 import {
@@ -37,6 +39,7 @@ import {
   HEIGHT,
   BUTTON_CONTAINER,
   BUTTON_TEXT,
+  SHADOW,
   DIVIDER,
 } from "../../components/Items/";
 // import
@@ -81,7 +84,6 @@ const NewOrderScreen = (props) => {
   //
   // card #3 variables
   const [pickUpAddress, setPickUpAddress] = useState();
-
   //
   // card #4 variables
   const [loadNumber, setLoadNumber] = useState(1);
@@ -89,7 +91,6 @@ const NewOrderScreen = (props) => {
     withOutSubscription: 12,
     withSubscription: 9.7,
   });
-
   //
   // screen functions
   useEffect(() => {
@@ -312,23 +313,140 @@ const NewOrderScreen = (props) => {
   };
   //
   // card #3 functions
-  const addressHelper = async (adr) => {
-    console.log("addressHelper()  initiated for", adr);
-    if (adr == undefined || adr == "") {
-      console.log("address passed does is blank or undefined");
+
+  const [initialRegion, setInitialRegion] = useState(undefined);
+  const [newRegion, setNewRegion] = useState();
+  const [loading, setLoading] = useState(true);
+  // const [address, setAddress] = useState(props.route.params.address);
+  const [
+    autoCompletePossibleLocations,
+    setAutoCompletePossibleLocations,
+  ] = useState({ display: true, array: [] });
+  const [error, setError] = useState("");
+
+  // functions that run  the first time page loads
+  //
+  useEffect(() => {
+    console.log("useEffect() newOrderScreen []");
+    // console.log('props.route.params.location:   ',props.route.params.location)
+  }, []);
+
+  function goToInitialLocation() {
+    console.log("goToInitialLocation() initiated3");
+    let initialRegion = props.route.params.location;
+    initialRegion["latitudeDelta"] = 0.005; // sets zoom level
+    initialRegion["longitudeDelta"] = 0.005; // sets zoom level
+    console.log("initialRegion2:   ", initialRegion);
+    this.mapView.animateToRegion(initialRegion, 2000);
+    console.log("goToInitialLocation() complete");
+  }
+  useEffect(() => {
+    console.log("HomeScreen useEffect() [pickUpAddress]");
+    addresAutoComplete();
+  }, [pickUpAddress]);
+  // functions that run  the first time page loads
+  //
+
+  const addresAutoComplete = async () => {
+    console.log(`addresAutoComplete() initiated for pickUpAddress:  ${pickUpAddress} `);
+    if (pickUpAddress == "") {
+      console.log("pickUpAddress is empty");
+      console.log("exiting addresAutoComplete() without API call");
+      setAutoCompletePossibleLocations({ display: false, array: [] });
       return;
     }
-    const addressLatLong = await getLatLongFromAddress(adr);
-    console.log("addressLatLong:  ", addressLatLong);
-    const addressDistanceToHeadQuarters = getDistanceFromLatLon(
-      addressLatLong.latitude,
-      addressLatLong.longitude
-    );
+    if (pickUpAddress == undefined) {
+      console.log(`pickUpAddress is undefined`);
+      console.log("exiting addresAutoComplete() without API call");
+      setAutoCompletePossibleLocations({ display: false, array: [] });
+      return;
+    }
+
+
+
+    console.log("initiating API call for pickUpAddress:  ", pickUpAddress);
+    let possibleLocations = [];
+    let sanitizedAddress = pickUpAddress.replace(/ /g, "+");
+    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${sanitizedAddress}&key=${GOOGLE_MAPS_KEY}`;
+    await fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        for (let i = 0; i < data["predictions"].length; i++) {
+          possibleLocations.push(data["predictions"][i]["description"]);
+        }
+      })
+      .catch((err) => {
+        console.warn(err.message);
+      });
+    console.log("auto complete for input pickUpAddress & API complete");
+    console.log(`possibleLocations size:  `, possibleLocations.length);
+    console.log("updating the state variable autoCompletePossibleLocations");
+    let obj = {
+      ...autoCompletePossibleLocations,
+      array: [...possibleLocations],
+    };
+    setAutoCompletePossibleLocations(obj);
+    // setAutoCompletePossibleLocations({...autoCompletePossibleLocations,array:[...possibleLocations]});
+  };
+
+  const setNewRegionHelper = async (adr) => {
+    console.log("setNewRegion() initiated");
+    let latLongFromAddress = await getLatLongFromAddress(adr);
+    console.log("latLongFromAddress:  ", latLongFromAddress);
+    let _newRegion = {
+      ...latLongFromAddress,
+      latitudeDelta: 0.03,
+      longitudeDelta: 0.03,
+    };
+    console.log("newRegion:   ", _newRegion);
+    // setInitialRegion(newRegion);
+    setNewRegion(_newRegion);
+  };
+
+  const displayAutoCompletePossibleLocations = () => {
+    console.log("displayAutoCompletePossibleLocations()");
     console.log(
-      "addressDistanceToHeadQuarters:  ",
-      addressDistanceToHeadQuarters
+      "display possible locations under search bar?  ",
+      autoCompletePossibleLocations.display
     );
-    setPickUpAddress(adr);
+    console.log("array size: ", autoCompletePossibleLocations.array.length);
+    return autoCompletePossibleLocations.display ? (
+      <FlatList
+        data={autoCompletePossibleLocations.array}
+        keyExtractor={(item) => item}
+        // extraData={address}
+        style={{
+          height: 180,
+          borderColor: "green",
+        }}
+        renderItem={({ item }) => {
+          console.log("printing item");
+          return (
+            <TouchableOpacity
+              onPress={() => {
+                console.log(`item pressed:   ${item}`);
+                
+                setPickUpAddress(item);
+                setAutoCompletePossibleLocations({ display: false, array: [] });
+                setNewRegionHelper(item);
+              }}
+            >
+              <Container style={{ margin: 5, backgroundColor: "#f8f9fa" }}>
+                <Text>{item}</Text>
+              </Container>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    ) : null;
+  };
+
+  const searchBarOnFocus = () => {
+    console.log("onFocus has fired");
+    setAutoCompletePossibleLocations({
+      ...autoCompletePossibleLocations,
+      display: true,
+    });
   };
   //
   // card #4 functions
@@ -535,7 +653,6 @@ const NewOrderScreen = (props) => {
             </Text>
           </TimeModal>
           <Text>
-            
             Monday through Friday from 10 am to 7 pm. There must be at least 1
             hour difference between the order time and current time.
           </Text>
@@ -644,7 +761,43 @@ const NewOrderScreen = (props) => {
       id: "card #2",
     },
     {
-      element: <Map props={props.route.params} addressHelper={addressHelper} />,
+      //<Map props={props.route.params} addressHelper={addressHelper} />,
+
+      element: (
+        <View style={styles.container}>
+          <MapView
+            style={styles.mapStyle}
+            region={newRegion}
+            ref={(ref) => (this.mapView = ref)}
+            zoomEnabled={true}
+            showsUserLocation={true}
+            onMapReady={goToInitialLocation}
+            initialRegion={initialRegion}
+          >
+            <Marker coordinate={newRegion} />
+          </MapView>
+          <View style={styles.topInputs_ButtonContainer}>
+            <>
+              <SearchBar
+                term={pickUpAddress}
+                onTermChange={(txt_address) => {
+                  setAutoCompletePossibleLocations({
+                    ...autoCompletePossibleLocations,
+                    display: true,
+                  });
+                  setPickUpAddress(txt_address);
+                }}
+                onFocus={searchBarOnFocus}
+                // onBlur={searchBarOnBlur}
+              />
+              {/* old searchbar below, just in case this search bar does not work */}
+
+              {displayAutoCompletePossibleLocations()}
+            </>
+          </View>
+        </View>
+      ),
+
       id: "card #3",
     },
     {
@@ -976,6 +1129,82 @@ const styles = StyleSheet.create({
     fontSize: FIELD_VALUE_FONT_SIZE,
     fontWeight: "bold",
     paddingRight: 10,
+  },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mapStyle: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height,
+  },
+  topInputs_ButtonContainer: {
+    backgroundColor: "transparent",
+    position: "absolute",
+    top: 22,
+  },
+  menuIcon: {
+    paddingLeft: 15,
+  },
+  searchBoxContainer: {
+    flexDirection: "row",
+    paddingLeft: 15,
+    paddingRight: 15,
+    height: 50,
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#f9f9f9",
+    backgroundColor: "#f9f9f9",
+    ...SHADOW,
+  },
+  icon: {
+    width: 20,
+    marginTop: 15,
+    marginBottom: 15,
+  },
+  addressTextInput: {
+    width: "85%",
+    height: 45,
+    paddingLeft: 10,
+  },
+  bottomButtonsContainer: {
+    backgroundColor: "transparent",
+    position: "absolute",
+    bottom: 40,
+    height: HEIGHT * 0.2,
+    width: WIDTH,
+    alignItems: "center",
+  },
+  bottomInnerButtonsContainer: {
+    flexDirection: "row",
+    position: "relative",
+    paddingTop: 10,
+  },
+  newOrderButton: {
+    backgroundColor: "#f9f9f9",
+    position: "relative",
+    justifyContent: "center",
+    borderColor: "#f9f9f9",
+    width: WIDTH * 0.8,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 20,
+    ...SHADOW,
+  },
+  noCard_FAQButton: {
+    height: 50,
+    width: 50,
+    backgroundColor: "#f9f9f9",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "#f9f9f9",
+    position: "relative",
+    borderWidth: 1,
+    borderRadius: 20,
+    width: WIDTH * 0.4,
+    ...SHADOW,
   },
 });
 export default NewOrderScreen;
