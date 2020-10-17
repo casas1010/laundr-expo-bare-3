@@ -43,6 +43,7 @@ import {
 import Header from "../../components/Header";
 import Container from "../../components/Container";
 import Map from "./Map";
+import moment from "moment";
 
 const _DATE = new Date();
 var DATE = _DATE.getDate();
@@ -59,6 +60,7 @@ const NewOrderScreen = (props) => {
 
   //
   // card #1 variables
+
   const [pickUpDate, setPickUpDate] = useState({ month: MONTH, date: DATE });
   const [displayTime, setDisplayTime] = useState({
     hour: 12,
@@ -68,7 +70,6 @@ const NewOrderScreen = (props) => {
   });
   const [userModalView, setUserModalView] = useState(false);
   const [date, setDate] = useState(new Date("May 24, 1992 12:00:00")); // Random 0 reference point
-  const [show, setShow] = useState(false);
 
   //
   // card #2 variables
@@ -93,6 +94,7 @@ const NewOrderScreen = (props) => {
   // screen functions
   useEffect(() => {
     setPickUpAddress(props.route.params.address); // here
+    onTimeChange();
   }, []);
 
   const nextHelper = async () => {
@@ -159,7 +161,6 @@ const NewOrderScreen = (props) => {
   };
   const onTimeChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setShow(Platform.OS === "ios");
     setDate(currentDate);
     const str = JSON.stringify(currentDate);
 
@@ -169,84 +170,82 @@ const NewOrderScreen = (props) => {
       allowed: true,
     };
 
-    console.log("hour before mod:  ", parseInt(time.hour));
-    if (3 >= parseInt(time.hour) && parseInt(time.hour) >= 0) {
-      // 8 => 10 pm
-      console.log("case1");
-      time.hour = parseInt(time.hour) + 8;
-      time.allowed = false;
-      time.m = "pm";
-    } else if (4 == parseInt(time.hour)) {
-      console.log("case2");
-      time.hour = parseInt(time.hour) + 8;
-      time.m = "am";
-      time.allowed = false;
-    } else if (15 >= parseInt(time.hour) && parseInt(time.hour) >= 4) {
-      console.log("case3");
-      console.log("subtract 4");
-      time.m = "am";
-      time.allowed = false;
-      if (parseInt(time.hour) >= 14) {
-        console.log("case3.1");
-        time.allowed = true;
-      }
-      time.hour = parseInt(time.hour) - 4;
-    } else if (parseInt(time.hour) == 16) {
-      console.log("case4");
-      console.log("edge case, setting to 12 pm");
-      time.m = "pm";
-      time.hour = 12;
-    } else if (parseInt(time.hour) > 16) {
-      console.log("case5");
-      console.log("subtract 16");
-      time.m = "pm";
-      time.hour = parseInt(time.hour) - 16;
-      time.allowed = true;
-      if (parseInt(time.hour) >= 24) {
-        console.log("case5.1");
+    // the following code {} changes the time format only
+    {
+      console.log("hour before modification:  ", parseInt(time.hour));
+      if (3 >= parseInt(time.hour) && parseInt(time.hour) >= 0) {
+        // 8 => 10 pm
+        console.log("hour modification case1");
+        time.hour = parseInt(time.hour) + 8;
         time.allowed = false;
+        time.m = "pm";
+      } else if (4 == parseInt(time.hour)) {
+        console.log("hour modification case2");
+        time.hour = parseInt(time.hour) + 8;
+        time.m = "am";
+        time.allowed = false;
+      } else if (15 >= parseInt(time.hour) && parseInt(time.hour) >= 4) {
+        console.log("hour modification case3");
+        time.m = "am";
+        time.allowed = false;
+        if (parseInt(time.hour) >= 14) {
+          console.log("hour modification case3.1");
+          time.allowed = true;
+        }
+        time.hour = parseInt(time.hour) - 4;
+      } else if (parseInt(time.hour) == 16) {
+        //edge case, setting to 12 pm
+        console.log("hour modification case4");
+        time.m = "pm";
+        time.hour = 12;
+      } else if (parseInt(time.hour) > 16) {
+        console.log("hour modification case5");
+        time.m = "pm";
+        time.hour = parseInt(time.hour) - 16;
+        time.allowed = true;
+        if (parseInt(time.hour) >= 24) {
+          console.log(" hour modification case5.1");
+          time.allowed = false;
+        }
+      }
+      console.log("hour after modification:  ", parseInt(time.hour));
+    }
+
+    setDisplayTime(time);
+    let dayDifference = pickUpDate.date - DATE;
+    console.log("dayDifference::", dayDifference);
+    if (dayDifference == 1) {
+      setDisplayTime(time);
+      return;
+    }
+    // if the code has made it this far, it means that the user wants their laundry
+    // cleaned today.
+    // the code below changes the format to 24 hours, then takes the difference in minutes
+    {
+      const current24Time = moment().format("HH:mm:ss");
+      const current24TimeHour = current24Time.slice(0, 2);
+      const currentMinute = current24Time.slice(3, 5);
+
+      let displayHourin24 = time.hour;
+      if (time.m == "pm" && displayHourin24 < 12) {
+        displayHourin24 = parseInt(displayHourin24) + 12;
+      }
+      console.log("displayHourin24:  ", displayHourin24);
+      const displayTotalMinute =
+        parseInt(displayHourin24) * 60 + parseInt(time.minute);
+      console.log("displayTotalMinute:  ", displayTotalMinute);
+      const currentTotalMinute =
+        parseInt(current24TimeHour) * 60 + parseInt(currentMinute);
+      console.log("currentTotalMinute:  ", currentTotalMinute);
+      const minuteDifference = displayTotalMinute - currentTotalMinute;
+      console.log("MINUTE DIFFERENCE:  ", minuteDifference);
+      if (minuteDifference < 60) {
+        console.log("minute differnece is less than 60");
+        time.allowed = false;
+        setDisplayTime(time);
+        return;
       }
     }
-    setDisplayTime(time);
-
-    //
-    //
-    //
-    //
-    //
-    //
-    // let dayDifference = pickUpDate.date - DATE;
-    // if (dayDifference == 1) {
-    //   console.log("day for pickup is not today");
-    //   setDisplayTime(time);
-    //   return;
-    // }
-
-    // // If user wants clothes picked up today, verify that there is at least one hour
-    // // between the time they want their laundry picked up and the current time
-    // let HOUR_COPY = HOUR;
-    // let MINUTE_COPY = MINUTE;
-    // let hourDifference;
-    // if (HOUR_COPY > 12) {
-    //   HOUR_COPY = HOUR_COPY - 12;
-    // }
-    // hourDifference = HOUR_COPY - time.hour;
-    // console.log("hourDifference: ", hourDifference);
-    // if (hourDifference < 0) {
-    //   time.allowed = false;
-    //   setDisplayTime(time);
-    //   return;
-    // }
-
-    // console.log("LIVE DATE:  ", DATE);
-    // console.log("date picked:  ", pickUpDate.date);
-    // console.log("LIVE HOUR:  ", HOUR_COPY);
-    // console.log("hour picked: ", time.hour);
-    // console.log("hours difference:  ", time.hour - HOUR_COPY);
-
-    // console.log(60 - MINUTE);
-    // console.log("hour after mod:   ", parseInt(time.hour));
-    // setDisplayTime(time);
   };
   const setUserHelper = (item) => {
     // setUserType(item);
@@ -531,10 +530,15 @@ const NewOrderScreen = (props) => {
                 color: displayTime.allowed ? "black" : "red",
               }}
             >
-              Monday through Friday from 10 am to 7 pm
+              Monday through Friday from 10 am to 7 pm. There must be at least 1
+              hour difference between the order time and current time.
             </Text>
           </TimeModal>
-          <Text style={{}}>Monday through Friday from 10 am to 7 pm</Text>
+          <Text>
+            
+            Monday through Friday from 10 am to 7 pm. There must be at least 1
+            hour difference between the order time and current time.
+          </Text>
         </>
       ),
       id: "card #1",
@@ -731,7 +735,11 @@ const NewOrderScreen = (props) => {
             <View
               style={[
                 styles.fieldValueContainer,
-                { flexDirection: "column", alignItems: "flex-end", backgroundColor:'red' },
+                {
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  backgroundColor: "red",
+                },
               ]}
             >
               <Text style={styles.fieldValueTxT}>{pickUpAddress}</Text>
@@ -971,3 +979,42 @@ const styles = StyleSheet.create({
   },
 });
 export default NewOrderScreen;
+
+// const current24Time = moment().format("HH:mm:ss");
+// const current12Time = moment().format("hh:mm:ss");
+// const current24TimeHour = current24Time.slice(0, 2);
+// const current12TimeHour = current12Time.slice(0, 2);
+// const currentMinute = current12Time.slice(3, 5);
+// console.log("current24Time   ", current24Time);
+// console.log("current24TimeHour:  ", current24TimeHour);
+// console.log("current12Time   ", current12Time);
+// console.log("current12TimeHour:  ", current12TimeHour);
+// console.log("currentMinute:  ", currentMinute);
+
+// const OPENING_HOURS = 7;
+// const CLOSING_HOURS = 19;
+
+// function checkIfHourIsBetweenWorkingHours(currentHour) {
+//   console.log("currentHour:  ", currentHour);
+//   if (OPENING_HOURS <= currentHour && CLOSING_HOURS >= currentHour) {
+//     console.log("current time IS between working hours");
+//     return true;
+//   }
+//   console.log("current time is NOT between working hours");
+//   return false;
+// }
+
+// if (!checkIfHourIsBetweenWorkingHours(time.hour)) {
+//   time.allowed = false;
+//   setDisplayTime(time);
+//   return;
+// }
+
+// let dayDifference = pickUpDate.date - DATE;
+// console.log("dayDifference::", dayDifference);
+// if (dayDifference == 1) {
+//   setDisplayTime(time);
+//   return;
+// }
+
+// console.log("CURRENT HOUR");

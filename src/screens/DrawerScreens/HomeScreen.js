@@ -232,7 +232,7 @@ const HomeScreen = (props) => {
 
   useEffect(() => {
     checkPaymentCard();
-  }, {});
+  }, []);
   const checkPaymentCard = () => {
     console.log("payment details:  ", props.payment);
   };
