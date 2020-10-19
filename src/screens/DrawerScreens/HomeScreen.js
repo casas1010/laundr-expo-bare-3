@@ -231,14 +231,14 @@ const HomeScreen = (props) => {
   };
 
   const paymentButtonInformation = () => {
-    // if (props.payment.cardInfo.lastFour !== null) {
-    //   return (
-    //     <>
-    //       <AntDesign name="creditcard" size={18} color="white" />
-    //       <Text> {props.payment.cardInfo.lastFour}</Text>
-    //     </>
-    //   );
-    // }
+    if (props.payment.cardInfo.lastFour !== null) {
+      return (
+        <>
+          <AntDesign name="creditcard" size={18} color="white" />
+          <Text> {props.payment.cardInfo.lastFour}</Text>
+        </>
+      );
+    }
     return(
       <Text>Add Card</Text>
     )

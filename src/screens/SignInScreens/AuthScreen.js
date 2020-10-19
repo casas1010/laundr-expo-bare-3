@@ -12,25 +12,17 @@ import Loader from "../../components/Loader";
 import { connect } from "react-redux";
 import * as actions from "../../actions/";
 
-
 const AuthScreen = (props) => {
   const [token, setToken] = useState(null);
-
-
 
   useEffect(() => {
     async function locationAndTokenFlow() {
       await props.getUserLocation();
-      props.doAuthLogin(props)
-     
     }
-    // console.log('props authscreen: ',props)
     locationAndTokenFlow();
+    props.doAuthLogin(props);
   }, []);
 
-
-
-  
   return (
     <View
       style={{
