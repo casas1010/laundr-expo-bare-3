@@ -12,6 +12,7 @@ const SearchBar = ({
   xIconStyle,
   onFocus,
   onBlur,
+  placeholder,
 }) => {
   return (
     <View style={[styles.backgroundStyle, { ...backgroundStyle }]}>
@@ -23,7 +24,7 @@ const SearchBar = ({
         autoCapitalize="none"
         autoCorrect={false}
         style={[styles.inputStyle, { ...inputStyle }]}
-        placeholder="Search History"
+        placeholder={placeholder}
         placeholderTextColor="white"
         value={term}
         onChangeText={(term) => {
@@ -53,6 +54,7 @@ const SearchBar = ({
 
 SearchBar.defaultProps = {
   onBlur: () => console.log("onBlur fired"),
+  onFocus: () => console.log("onFocus fired"),
 };
 
 const styles = StyleSheet.create({
@@ -72,7 +74,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   iconStyle: {
-    fontSize: 35,
+    fontSize: 20,
     alignSelf: "center",
     marginHorizontal: 15,
     color: "#e0eff2",

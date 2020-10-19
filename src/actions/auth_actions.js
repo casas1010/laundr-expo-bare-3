@@ -15,6 +15,8 @@ import { addUserInformation } from "./user_actions";
 import { fetchPaymentInfo } from "./payment_actions";
 import { fetchOrders } from "../actions/history_actions";
 import { BASE_URL } from "../key/";
+      //const response = await axios.post("http://192.168.1.69:5000/api/user/login", {
+
 
 export const emailLogOut = (props) => async (dispatch) => {
   console.log("emailLogOut() action invoked");
@@ -90,7 +92,7 @@ export const doAuthLogin = (props) => async (dispatch) => {
       }
     } catch (error) {
       console.log(props.navigation.navigate("welcome"));
-
+      alert("Login failed, there has been an error in the request")
       console.log("Login failed, there has been an error in the request");
 
       console.log(error);
@@ -128,7 +130,6 @@ export const doEmailLogin = (props) => async (dispatch) => {
     console.log('Email and password have valid syntax')
 
     try {
-      //const response = await axios.post("http://192.168.1.69:5000/api/user/login", {
       const response = await axios.post(BASE_URL + "/api/user/login/", {
         email: props.email.toLowerCase(),
         password: props.password,
@@ -146,7 +147,7 @@ export const doEmailLogin = (props) => async (dispatch) => {
         dispatch(fetchOrders(props.email.toLowerCase()));
 
         dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
-        props.navigation.navigate("drawer");
+        // props.navigation.navigate("drawer");
 
         return;
       } else {
@@ -157,7 +158,7 @@ export const doEmailLogin = (props) => async (dispatch) => {
       }
     } catch (error) {
       console.log("Login failed, there has been an error in the request");
-
+      alert("Login failed, there has been an error in the request")
       console.log(error);
       dispatch({ type: EMAIL_LOGIN_FAIL });
       return;

@@ -83,7 +83,10 @@ const SearchScreen = (props) => {
 
       <SearchBar
         term={term}
+        onFocus={() => onFocus()}
         onTermChange={setTerm}
+        placeholder='Search History'
+
         onTermSubmit={() => {
           console.log(`term searched is ${term}`);
         }}
@@ -177,19 +180,6 @@ const SearchScreen = (props) => {
                             {item.orderInfo.address}
                           </Text>
                         </View>
-
-                        {/* <View style={styles.addressCustomContainer}>
-                      <Text style={styles.fieldValueTxT}>
-                        {item.address.city},{item.address.state},
-                        {item.address.zipCode}
-                      </Text>
-                    </View>
-
-                    <View style={styles.addressCustomContainer}>
-                      <Text style={styles.fieldValueTxT}>
-                        {item.address.country}
-                      </Text>
-                    </View> */}
                       </View>
                     </View>
                   </View>

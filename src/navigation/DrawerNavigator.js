@@ -22,15 +22,15 @@ const DrawerNavigator = () => {
     <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />}>
 
       <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Account" component={AccountScreen} />
-      <Drawer.Screen name="ChangePassword" component={ChangePasswordScreen} />
-      <Drawer.Screen name="New Order Screen" component={NewOrderScreen} />
-      <Drawer.Screen name="History" component={HistoryScreen} />
-      <Drawer.Screen name="Order Details" component={OrderDetailsScreen} />
-      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
-      <Drawer.Screen name="Referrals" component={ReferralScreen} />
-      {/* <Drawer.Screen name="Payment" component={PaymentScreen} /> */}
-      <Drawer.Screen name="Subscriptions" component={SubscriptionsScreen} />
+      <Drawer.Screen name="Account" component={AccountScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="ChangePassword" component={ChangePasswordScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="New Order Screen" component={NewOrderScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="History" component={HistoryScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="Order Details" component={OrderDetailsScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="Notifications" component={NotificationsScreen} options={{unmountOnBlur:true}}/>
+      <Drawer.Screen name="Referrals" component={ReferralScreen} options={{unmountOnBlur:true}}/>
+      {/* <Drawer.Screen name="Payment" component={PaymentScreen} options={{unmountOnBlur:true}}/> */}
+      <Drawer.Screen name="Subscriptions" component={SubscriptionsScreen} options={{unmountOnBlur:true}}/>
       <Drawer.Screen name="Help" component={HelpScreen} />
     </Drawer.Navigator>
   );

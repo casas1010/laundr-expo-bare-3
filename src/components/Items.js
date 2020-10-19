@@ -1,5 +1,5 @@
 import React from "react";
-import { Dimensions, TouchableOpacity, Text, Image,View } from "react-native";
+import { Dimensions, TouchableOpacity, Text, Image, View } from "react-native";
 
 export const DIVIDER = (props) => {
   return (
@@ -8,15 +8,18 @@ export const DIVIDER = (props) => {
         alignItems: "center",
         justifyContent: "center",
         margin: 10,
-        ...props.containerStyle
+        ...props.containerStyle,
       }}
     >
       <View
-        style={[{
-          height: 1,
-          width: "100%",
-          backgroundColor: "grey",
-        },{...props.style}]}
+        style={[
+          {
+            height: 1,
+            width: "100%",
+            backgroundColor: "grey",
+          },
+          { ...props.style },
+        ]}
       />
     </View>
   );
@@ -99,7 +102,8 @@ export const BUTTON = (props) => {
       style={[BUTTON_CONTAINER, { ...props.style }]}
       onPress={props.onPress}
     >
-      <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>{props.text}</Text>
+      <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>{props.text || props.children}</Text>
+    
     </TouchableOpacity>
   );
 };

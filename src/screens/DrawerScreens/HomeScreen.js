@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-
+import { AntDesign } from "@expo/vector-icons";
 import { BUTTON } from "../../components/Items/";
 import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
@@ -230,20 +230,22 @@ const HomeScreen = (props) => {
     });
   };
 
-  useEffect(() => {
-    checkPaymentCard();
-  }, []);
-  const checkPaymentCard = () => {
-    console.log("payment details:  ", props.payment);
+  const paymentButtonInformation = () => {
+    // if (props.payment.cardInfo.lastFour !== null) {
+    //   return (
+    //     <>
+    //       <AntDesign name="creditcard" size={18} color="white" />
+    //       <Text> {props.payment.cardInfo.lastFour}</Text>
+    //     </>
+    //   );
+    // }
+    return(
+      <Text>Add Card</Text>
+    )
   };
 
   return (
     <View style={styles.container}>
-      {/* <KeyboardAwareScrollView
-        resetScrollToCoords={{ x: 0, y: 0 }}
-        contentContainerStyle={{flex:1}}
-        showsVerticalScrollIndicator={false}
-      > */}
       <MapView
         style={styles.mapStyle}
         region={newRegion}
@@ -256,11 +258,7 @@ const HomeScreen = (props) => {
         <Marker coordinate={newRegion} />
       </MapView>
       <View style={styles.topInputs_ButtonContainer}>
-        <TouchableOpacity
-          onPress={props.navigation.openDrawer}
-          // style={{ backgroundColor: "red" }}
-        >
-          {/* <Image source={require("../../assets/spinner.png")} /> */}
+        <TouchableOpacity onPress={props.navigation.openDrawer}>
           <Entypo
             name="menu"
             size={50}
@@ -268,7 +266,6 @@ const HomeScreen = (props) => {
             style={{ marginLeft: 10 }}
           />
         </TouchableOpacity>
-
         <>
           <SearchBar
             term={address}
@@ -279,11 +276,9 @@ const HomeScreen = (props) => {
               });
               setAddress(txt_address);
             }}
+            placeholder="Search Locations"
             onFocus={searchBarOnFocus}
-            // onBlur={searchBarOnBlur}
           />
-          {/* old searchbar below, just in case this search bar does not work */}
-
           {displayAutoCompletePossibleLocations()}
         </>
       </View>
@@ -291,12 +286,14 @@ const HomeScreen = (props) => {
         <BUTTON onPress={newOrder} text="New Order" />
         <View style={styles.bottomInnerButtonsContainer}>
           <BUTTON
-            // onPress={() => {
-            //   Linking.openURL("https://www.laundr.io/faq/");
-            // }}
+            onPress={() => {
+              console.log(props.payment.cardInfo.lastFour);
+            }}
             style={{ width: WIDTH * 0.4 }}
-            text="No Card"
-          />
+            // text={paymentButtonInformation()}
+          >
+            {paymentButtonInformation()}
+          </BUTTON>
 
           <BUTTON
             onPress={() => {
@@ -396,53 +393,3 @@ function mapStateToProps({ location, payment }) {
 }
 // export default HomeScreen;
 export default connect(mapStateToProps)(HomeScreen);
-
-//   <View style={styles.searchBoxContainer}>
-//   <FontAwesome5
-//     name="search-location"
-//     size={18}
-//     color="black"
-//     style={styles.icon}
-//   />
-//   <TextInput
-//     value={address}
-//     onChangeText={(txt_address) => {
-//       setAutoCompletePossibleLocations({
-//         ...autoCompletePossibleLocations,
-//         display: true,
-//       });
-//       setAddress(txt_address);
-//     }}
-//     placeholder="Address"
-//     style={styles.addressTextInput}
-//     returnKeyLabel={"Search"}
-//     onBlur={() => {
-//       console.log("unFocus has fired");
-//       setAutoCompletePossibleLocations({
-//         ...autoCompletePossibleLocations,
-//         display: false,
-//       });
-//     }}
-//     onFocus={() => {
-//       console.log("onFocus has fired");
-//       setAutoCompletePossibleLocations({
-//         ...autoCompletePossibleLocations,
-//         display: true,
-//       });
-//     }}
-//   />
-//   <TouchableOpacity
-//     style={{ alignItems: "center", justifyContent: "center" }}
-//     onPress={() => {
-//       setAutoCompletePossibleLocations({ display: false, array: [] });
-//       setAddress("");
-//     }}
-//   >
-//     <Feather
-//       name="x"
-//       size={24}
-//       color="black"
-//       // style={{ backgroundColor: "red" }}
-//     />
-//   </TouchableOpacity>
-// </View>

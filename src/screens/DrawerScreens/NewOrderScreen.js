@@ -98,6 +98,11 @@ const NewOrderScreen = (props) => {
     onTimeChange();
   }, []);
 
+  useEffect(() => {
+    onTimeChange();
+  }, [pickUpDate]);
+
+
   const nextHelper = async () => {
     console.log("nextHelper()");
     if (!displayTime.allowed) {
@@ -159,6 +164,7 @@ const NewOrderScreen = (props) => {
     console.log("date set for laundry:  ", dateDetails);
     console.log("pickUpDate.month        :", dateDetails.date);
     setPickUpDate(dateDetails);
+    
   };
   const onTimeChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -329,6 +335,7 @@ const NewOrderScreen = (props) => {
   useEffect(() => {
     console.log("useEffect() newOrderScreen []");
     // console.log('props.route.params.location:   ',props.route.params.location)
+    setNewRegionHelper(props.route.params.address);
   }, []);
 
   function goToInitialLocation() {
@@ -348,7 +355,9 @@ const NewOrderScreen = (props) => {
   //
 
   const addresAutoComplete = async () => {
-    console.log(`addresAutoComplete() initiated for pickUpAddress:  ${pickUpAddress} `);
+    console.log(
+      `addresAutoComplete() initiated for pickUpAddress:  ${pickUpAddress} `
+    );
     if (pickUpAddress == "") {
       console.log("pickUpAddress is empty");
       console.log("exiting addresAutoComplete() without API call");
@@ -361,8 +370,6 @@ const NewOrderScreen = (props) => {
       setAutoCompletePossibleLocations({ display: false, array: [] });
       return;
     }
-
-
 
     console.log("initiating API call for pickUpAddress:  ", pickUpAddress);
     let possibleLocations = [];
@@ -425,7 +432,7 @@ const NewOrderScreen = (props) => {
             <TouchableOpacity
               onPress={() => {
                 console.log(`item pressed:   ${item}`);
-                
+
                 setPickUpAddress(item);
                 setAutoCompletePossibleLocations({ display: false, array: [] });
                 setNewRegionHelper(item);

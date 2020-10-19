@@ -37,16 +37,7 @@ const City = (props) => {
 
   return (
     <View style={styles.formContainer}>
-      {/* note 1 */}
       <Text style={styles.text}>Select Your City:</Text>
-
-      {/* <RNPickerSelect
-        placeholder={{}}
-        onValueChange={(value) => props.callBack(value)}
-        items={CITIES}
-        style={pickerSelectStyles}
-      /> */}
-
       <MenuModal
         title="Select City Type"
         setCardTypeHelper={setCityHelper}

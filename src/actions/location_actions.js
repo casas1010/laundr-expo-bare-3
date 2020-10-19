@@ -32,12 +32,9 @@ const getUserLatLong = () => async (dispatch) => {
 
     return;
   }
-
-
   console.log('User has shared location')
 
   let location = await Location.getCurrentPositionAsync({});
-  // console.log("expo-location:   ", location);
 
   const userLatLong = {
     latitude: parseFloat(location.coords.latitude),
