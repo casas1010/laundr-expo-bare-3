@@ -36,10 +36,8 @@ export const getAddressFromLatLong = async (lat, long) => {
   console.log("getAddressFromLatLong()");
   console.log(`getting address from lat:  ${lat}, long:${long}`);
   let possibleLocationsFromLatLong = [];
-  const KEY = GOOGLE_MAPS_KEY;
-  const LAT = lat;
-  const LNG = long;
-  let url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${LAT},${LNG}&key=${KEY}`;
+  let url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&components=country:US
+  &key=${GOOGLE_MAPS_KEY}`;
   await fetch(url)
     .then((response) => response.json())
     .then((data) => {
@@ -93,8 +91,8 @@ export const getLatLongFromAddress = async (adr) => {
     return null;
   }
   console.log(`initiated API to get coordinates for address: ${adr}`);
-  const KEY = GOOGLE_MAPS_KEY;
-  let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${adr}&key=${KEY}`;
+  let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${adr}&components=country:US
+  &key=${GOOGLE_MAPS_KEY}`;
   let locationObj = {};
   await fetch(url)
     .then((response) => response.json())

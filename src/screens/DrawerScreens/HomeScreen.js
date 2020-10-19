@@ -33,19 +33,20 @@ import {
 } from "../../components/Items/";
 import { GOOGLE_MAPS_KEY } from "../../key/";
 import SearchBar from "../../components/SearchBar";
-
+import LoaderModal from "../../components/LoaderModal";
 let addresAutoCompleteCount = 1;
 let loadCount = 1;
 // future improvement: use axios on API calls
-
+let acTimeout;
 const HomeScreen = (props) => {
   console.log("HomeScreen is loaded");
   console.log("number of times loaded:", loadCount);
   loadCount = loadCount + 1;
+  const [loading, setLoading] = useState(false);
 
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
-  const [loading, setLoading] = useState(true);
+
   const [userAddress, setUserAddress] = useState();
   const [address, setAddress] = useState();
   const [
@@ -78,7 +79,16 @@ const HomeScreen = (props) => {
   }
   useEffect(() => {
     console.log("HomeScreen useEffect() [address]");
-    addresAutoComplete();
+
+    // addresAutoComplete();
+
+    
+    clearTimeout(acTimeout);
+    acTimeout = setTimeout(function () {
+      //put auto-complete calls in here
+      console.log("inside useEffect!");
+      addresAutoComplete();
+    }, 1200);
   }, [address]);
   // functions that run  the first time page loads
   //
@@ -119,7 +129,7 @@ const HomeScreen = (props) => {
     console.log("initiating API call for address:  ", address);
     let possibleLocations = [];
     let sanitizedAddress = address.replace(/ /g, "+");
-    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${sanitizedAddress}&key=${GOOGLE_MAPS_KEY}`;
+    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${sanitizedAddress}&components=country:us&key=${GOOGLE_MAPS_KEY}`;
     await fetch(url)
       .then((response) => response.json())
       .then((data) => {
@@ -143,7 +153,9 @@ const HomeScreen = (props) => {
 
   const setNewRegionHelper = async (adr) => {
     console.log("setNewRegion() initiated");
+    setLoading(true);
     let latLongFromAddress = await getLatLongFromAddress(adr);
+    setLoading(false);
     console.log("latLongFromAddress:  ", latLongFromAddress);
     let _newRegion = {
       ...latLongFromAddress,
@@ -157,14 +169,18 @@ const HomeScreen = (props) => {
 
   const newOrder = async () => {
     console.log("newOrder() initiated");
+    setLoading(true);
     const location = await getLatLongFromAddress(address);
+    setLoading(false);
     if (location === null) {
       alert("Please enter an address to proceed");
       console.log("exiting newOrder()");
 
       return;
     }
+    setLoading(true);
     const addressVerificatioBoolean = await verifyAddressIsInBounds(location);
+    setLoading(false);
     console.log("addressVerificatioBoolean:   ", addressVerificatioBoolean);
     if (!addressVerificatioBoolean) {
       console.log("user is out of range");
@@ -239,13 +255,12 @@ const HomeScreen = (props) => {
         </>
       );
     }
-    return(
-      <Text>Add Card</Text>
-    )
+    return <Text>Add Card</Text>;
   };
 
   return (
     <View style={styles.container}>
+      <LoaderModal loading={loading} />
       <MapView
         style={styles.mapStyle}
         region={newRegion}
