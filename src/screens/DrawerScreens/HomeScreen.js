@@ -1,3 +1,6 @@
+//        TEST DIFFERNT LAG TIMES FOR ADDRESS AUTODISPLAY
+//        .5 SECONDS SHOULD BE GOOD?
+
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,7 +22,7 @@ import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-//
+
 import {
   getLatLongFromAddress,
   verifyAddressIsInBounds,
@@ -55,8 +58,7 @@ const HomeScreen = (props) => {
   ] = useState({ display: true, array: [] });
   const [error, setError] = useState("");
 
-  // functions that run  the first time page loads
-  //
+
   useEffect(() => {
     console.log("useEffect() HomeScreen []");
     setUserLocation();
@@ -80,18 +82,14 @@ const HomeScreen = (props) => {
   useEffect(() => {
     console.log("HomeScreen useEffect() [address]");
 
-    // addresAutoComplete();
-
-    
     clearTimeout(acTimeout);
     acTimeout = setTimeout(function () {
-      //put auto-complete calls in here
       console.log("inside useEffect!");
       addresAutoComplete();
     }, 1200);
+
   }, [address]);
-  // functions that run  the first time page loads
-  //
+
 
   const addresAutoComplete = async () => {
     console.log(`addresAutoComplete() initiated for address:  ${address} `);
@@ -153,9 +151,9 @@ const HomeScreen = (props) => {
 
   const setNewRegionHelper = async (adr) => {
     console.log("setNewRegion() initiated");
-    setLoading(true);
+    // setLoading(true);
     let latLongFromAddress = await getLatLongFromAddress(adr);
-    setLoading(false);
+    // setLoading(false);
     console.log("latLongFromAddress:  ", latLongFromAddress);
     let _newRegion = {
       ...latLongFromAddress,
@@ -169,18 +167,19 @@ const HomeScreen = (props) => {
 
   const newOrder = async () => {
     console.log("newOrder() initiated");
-    setLoading(true);
+    // setLoading(true);
     const location = await getLatLongFromAddress(address);
-    setLoading(false);
+    // setLoading(false);
     if (location === null) {
       alert("Please enter an address to proceed");
       console.log("exiting newOrder()");
 
       return;
     }
-    setLoading(true);
+
+    // setLoading(true);
     const addressVerificatioBoolean = await verifyAddressIsInBounds(location);
-    setLoading(false);
+    // setLoading(false);
     console.log("addressVerificatioBoolean:   ", addressVerificatioBoolean);
     if (!addressVerificatioBoolean) {
       console.log("user is out of range");
@@ -238,25 +237,20 @@ const HomeScreen = (props) => {
       display: true,
     });
   };
-  const searchBarOnBlur = () => {
-    console.log("unFocus has fired");
-    setAutoCompletePossibleLocations({
-      ...autoCompletePossibleLocations,
-      display: false,
-    });
-  };
 
-  const paymentButtonInformation = () => {
-    if (props.payment.cardInfo.lastFour !== null) {
+  const paymentButtonText = () => {
+    if (props.payment.lastFour !== null) {
       return (
         <>
           <AntDesign name="creditcard" size={18} color="white" />
-          <Text> {props.payment.cardInfo.lastFour}</Text>
+          <Text> {props.payment.lastFour}</Text>
         </>
       );
     }
     return <Text>Add Card</Text>;
   };
+
+
 
   return (
     <View style={styles.container}>
@@ -302,12 +296,11 @@ const HomeScreen = (props) => {
         <View style={styles.bottomInnerButtonsContainer}>
           <BUTTON
             onPress={() => {
-              console.log(props.payment.cardInfo.lastFour);
+              props.navigation.navigate("Payment");
             }}
             style={{ width: WIDTH * 0.4 }}
-            // text={paymentButtonInformation()}
           >
-            {paymentButtonInformation()}
+            {paymentButtonText()}
           </BUTTON>
 
           <BUTTON

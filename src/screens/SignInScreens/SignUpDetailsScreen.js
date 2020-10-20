@@ -115,19 +115,19 @@ const signUpDetailsScreen = (props) => {
           alert("Please enter your phone number");
           break;
         }
-        setLoading(true);
+        // ;
         const check_Email_Password = await verifyEmailAndNumberForDuplicates(
           phone,
           email
         );
-        setLoading(false);
+        // ;
         console.log("verifyEmailAndNumberForDuplicates() complete");
 
         if (!check_Email_Password) {
           console.log("case 3.4 fail");
-          alert(
-            "The email or phone number you entered is not valid, please try again"
-          );
+          // alert(
+          //   "The email or phone number you entered is not valid, please try again"
+          // );
           return;
         }
         console.log("case 3 pass");
@@ -160,9 +160,9 @@ const signUpDetailsScreen = (props) => {
         if (!verification_data) {
           break;
         }
-        setLoading(true);
+        ;
         props.doEmailLogin({ email, password: password2 });
-        setLoading(false);
+        ;
         console.log("case 6 pass");
 
         break;
@@ -226,6 +226,7 @@ const signUpDetailsScreen = (props) => {
   };
 
   const verifyEmailAndNumberForDuplicates = async (phone, email) => {
+    ;
     console.log("verifyEmailAndNumberForDuplicates() initiated");
     console.log("email: ", email);
     console.log("phone: ", phone);
@@ -252,58 +253,63 @@ const signUpDetailsScreen = (props) => {
                 console.log("code has been sent to the phone number provided");
                 console.log("code to check:  ", response.data.message);
                 setSentGeneratedCode(response.data.message);
+                ;
                 return true;
               } else {
                 console.log(
                   "there has been an issue with the email and number provided"
                 );
                 console.log("response.data.message  :", response.data.message);
+                ;
                 alert(response.data.message);
                 return false;
               }
             } catch (error) {
               console.log("There has been an error with the request");
-              alert("There has been an error with the request");
               console.log("error:  ", error);
+              ;
+              alert("There has been an error with the request");
               return false;
             }
-            break;
 
           case 1:
-            alert("Email address is already in use. Please try again.");
             console.log(
               " case 1:  Email address is already in use. Please try again."
             );
+            ;
+            alert("Email address is already in use. Please try again.");
             return false;
-            break;
 
           case 2:
-            alert("Phone number is already in use. Please try again.");
             console.log(
               "case 2:  Email address is already in use. Please try again."
             );
+            ;
+            alert("Phone number is already in use. Please try again.");
             return false;
-            break;
 
           case 3:
-            alert(
-              "Email address and phone number are already in use. Please try again."
-            );
             console.log(
               "case 3:  Email address and phone number are already in use. Please try again."
             );
+            alert(
+              "Email address and phone number are already in use. Please try again."
+            );
+            ;
             return false;
             break;
         }
       } else {
         console.log("there has been an error in the request");
         console.log(response.data.message);
+        ;
         alert(response.data.message);
         return false;
       }
     } catch (error) {
-      alert("ERROR");
       console.log("ERROR", error);
+      ;
+      alert("ERROR");
       return false;
     }
   };

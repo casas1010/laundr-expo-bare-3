@@ -1,4 +1,18 @@
 // MAKE A LOADING SCREEN
+/*
+
+if status === active || status === cancelled : show screen with subscription details
+else : show current screen
+
+
+
+
+
+*/
+
+
+
+
 import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,

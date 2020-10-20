@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
+
 import {
   View,
   Text,
@@ -48,14 +50,18 @@ import Container from "../../components/Container";
 import Map from "./Map";
 import moment from "moment";
 
-const _DATE = new Date();
-var DATE = _DATE.getDate();
-var MONTH = _DATE.getMonth() + 1;
-var HOUR = _DATE.getHours(); //To get the Current Hours
-var MINUTE = _DATE.getMinutes();
+const TODAYS_DATE = new Date();
+var DATE = TODAYS_DATE.getDate();
+var MONTH = TODAYS_DATE.getMonth() + 1;
+var HOUR = TODAYS_DATE.getHours(); //To get the Current Hours
+var MINUTE = TODAYS_DATE.getMinutes();
 
 const _WIDTH = WIDTH * 0.35;
+const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs
+const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs
+const NO_PLAN_MULTIPLIER = 8;
 
+let acTimeout;
 const NewOrderScreen = (props) => {
   //
   // screen variables
@@ -87,6 +93,16 @@ const NewOrderScreen = (props) => {
   //
   // card #4 variables
   const [loadNumber, setLoadNumber] = useState(1);
+  const [coupon, setCoupon] = useState(0);
+
+  const [equation, setEquation] = useState({
+    family: loadNumber * FAMILY_PLAN_MULTIPLIER - coupon,
+    other: loadNumber * NOT_FAMILY_PLAN_MULTIPLIER - coupon,
+    noPlan: loadNumber * NO_PLAN_MULTIPLIER - coupon,
+  });
+
+  const [priceEquation, setPriceEquation] = useState();
+
   const [price, setPrice] = useState({
     withOutSubscription: 12,
     withSubscription: 9.7,
@@ -102,36 +118,94 @@ const NewOrderScreen = (props) => {
     onTimeChange();
   }, [pickUpDate]);
 
-
   const nextHelper = async () => {
-    console.log("nextHelper()");
-    if (!displayTime.allowed) {
-      alert("Please pick a time within working ours");
-      return;
-    }
-    if (index == 2) {
-      console.log("index == 2 , initiating addressPickUp Verification");
-      console.log("pickUpAddress:   ", pickUpAddress);
-      const location = await getLatLongFromAddress(pickUpAddress);
-      console.log("location:: ", location);
-      const addressVerificatioBoolean = await verifyAddressIsInBounds(location);
-      if (!addressVerificatioBoolean) {
-        console.log("user is out of range");
-        alert(
-          `Sorry!  You are currently out of Lanndr' active service area. Visit the site to request Landr at your location`
+    const indexOnScreen = index + 1;
+    switch (indexOnScreen) {
+      case 1:
+        if (!displayTime.allowed) {
+          alert("Please pick a time within working ours");
+          return;
+        }
+        next();
+        break;
+      case 3:
+        if (pickUpAddress === "") {
+          alert("Please enter an address to proceed");
+          break;
+        }
+        const location = await getLatLongFromAddress(pickUpAddress);
+
+        const addressVerificatioBoolean = await verifyAddressIsInBounds(
+          location
         );
+        if (!addressVerificatioBoolean) {
+          console.log("user is out of range");
+          alert(
+            `Sorry!  You are currently out of Laundr' active service area. Visit the site to request Landr at your location`
+          );
+          return;
+        }
+        next();
+        break;
+      case 4:
+        // flow_Payment_Subscription
+
+        break;
+
+      default:
+        console.log("switch default case initiated");
+        console.log("case: ", indexOnScreen);
+        next();
+    }
+  };
+
+  useEffect(() => {
+    flow_Payment_Subscription();
+  }, []);
+
+  const flow_Payment_Subscription = () => {
+    const payment = props.payment;
+    const subscription = props.subscription;
+    console.log("payment:  ", payment);
+    console.log("subscription:  ", subscription);
+
+    // check user plan
+    if (subscription.plan == "N/A") {
+      console.log("user has no plan");
+
+      if (payment.brand === "") {
+        console.log(
+          "user does not have a card on file, sending user to payment screen"
+        );
+        props.navigation.navigate("Payment");
         return;
       }
-    }
-
-    next();
-  };
-  const next = () => {
-    console.log("next()");
-    if (index === 5) {
-      singUpAPI();
+      console.log("user has a card on file");
+      setPriceEquation(equation.noPlan);
       return;
     }
+
+    console.log("user has a plan");
+
+    var date2 = new Date(subscription.periodEnd); // data manipulation
+    console.log("subscription ends:  ", subscription.periodEnd);
+    console.log("today:              ", TODAYS_DATE);
+    const dateComparison = date2.getTime() > TODAYS_DATE.getTime();
+    console.log("is the subscription valid?:   ", dateComparison);
+ 
+    subscription.status = "active"; // delete me
+    dateComparison = true; // delete me
+
+    if (!dateComparison && subscription.status !== "active") {
+      console.log("user subscription is not valid");
+      setPriceEquation(equation.other);
+    }
+
+    console.log("user subscription is valid");
+  };
+
+  const next = () => {
+    console.log("next()");
     if (ITEMS.length > index + 1) {
       setIndex(index + 1);
       flatListRef.scrollToIndex({ animated: true, index: index + 1 });
@@ -164,7 +238,6 @@ const NewOrderScreen = (props) => {
     console.log("date set for laundry:  ", dateDetails);
     console.log("pickUpDate.month        :", dateDetails.date);
     setPickUpDate(dateDetails);
-    
   };
   const onTimeChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -319,11 +392,10 @@ const NewOrderScreen = (props) => {
   };
   //
   // card #3 functions
-
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
   const [loading, setLoading] = useState(true);
-  // const [address, setAddress] = useState(props.route.params.address);
+
   const [
     autoCompletePossibleLocations,
     setAutoCompletePossibleLocations,
@@ -348,8 +420,12 @@ const NewOrderScreen = (props) => {
     console.log("goToInitialLocation() complete");
   }
   useEffect(() => {
-    console.log("HomeScreen useEffect() [pickUpAddress]");
-    addresAutoComplete();
+    console.log("NewOrderScreen useEffect() [pickUpAddress]");
+    clearTimeout(acTimeout);
+    acTimeout = setTimeout(function () {
+      console.log("inside useEffect!");
+      addresAutoComplete();
+    }, 1200);
   }, [pickUpAddress]);
   // functions that run  the first time page loads
   //
@@ -810,6 +886,7 @@ const NewOrderScreen = (props) => {
     {
       element: (
         <View style={{ alignItems: "center" }}>
+          {}
           <>
             <BUTTON text={"$" + price.withOutSubscription} />
             <View
@@ -1214,43 +1291,8 @@ const styles = StyleSheet.create({
     ...SHADOW,
   },
 });
-export default NewOrderScreen;
 
-// const current24Time = moment().format("HH:mm:ss");
-// const current12Time = moment().format("hh:mm:ss");
-// const current24TimeHour = current24Time.slice(0, 2);
-// const current12TimeHour = current12Time.slice(0, 2);
-// const currentMinute = current12Time.slice(3, 5);
-// console.log("current24Time   ", current24Time);
-// console.log("current24TimeHour:  ", current24TimeHour);
-// console.log("current12Time   ", current12Time);
-// console.log("current12TimeHour:  ", current12TimeHour);
-// console.log("currentMinute:  ", currentMinute);
-
-// const OPENING_HOURS = 7;
-// const CLOSING_HOURS = 19;
-
-// function checkIfHourIsBetweenWorkingHours(currentHour) {
-//   console.log("currentHour:  ", currentHour);
-//   if (OPENING_HOURS <= currentHour && CLOSING_HOURS >= currentHour) {
-//     console.log("current time IS between working hours");
-//     return true;
-//   }
-//   console.log("current time is NOT between working hours");
-//   return false;
-// }
-
-// if (!checkIfHourIsBetweenWorkingHours(time.hour)) {
-//   time.allowed = false;
-//   setDisplayTime(time);
-//   return;
-// }
-
-// let dayDifference = pickUpDate.date - DATE;
-// console.log("dayDifference::", dayDifference);
-// if (dayDifference == 1) {
-//   setDisplayTime(time);
-//   return;
-// }
-
-// console.log("CURRENT HOUR");
+function mapStateToProps({ payment, subscription }) {
+  return { payment, subscription };
+}
+export default connect(mapStateToProps)(NewOrderScreen);

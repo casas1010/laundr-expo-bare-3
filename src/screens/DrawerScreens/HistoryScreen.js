@@ -83,7 +83,7 @@ const SearchScreen = (props) => {
 
       <SearchBar
         term={term}
-        onFocus={() => onFocus()}
+       
         onTermChange={setTerm}
         placeholder='Search History'
 
