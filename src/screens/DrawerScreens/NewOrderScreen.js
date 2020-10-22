@@ -47,7 +47,7 @@ import {
 // import
 import Header from "../../components/Header";
 import Container from "../../components/Container";
-import Map from "./Map";
+
 import moment from "moment";
 
 const TODAYS_DATE = new Date();
@@ -59,9 +59,8 @@ var MINUTE = TODAYS_DATE.getMinutes();
 const _WIDTH = WIDTH * 0.35;
 const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs
 const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs
-const NO_PLAN_MULTIPLIER = 8;
+const NO_PLAN_MULTIPLIER = 1.5;
 
-let acTimeout;
 const NewOrderScreen = (props) => {
   //
   // screen variables
@@ -92,16 +91,54 @@ const NewOrderScreen = (props) => {
   const [pickUpAddress, setPickUpAddress] = useState();
   //
   // card #4 variables
-  const [loadNumber, setLoadNumber] = useState(1);
+  const [lbsForJob, setLbsForJob] = useState(1);
+  const [overLbsBackgroundColor, setOverLbsBackgroundColor] = useState("white");
+  const [numberOfFlashes, setNumberOfFlashes] = useState(0);
+
+  const [lbsLeft, setLbsLeft] = useState();
   const [coupon, setCoupon] = useState(0);
 
   const [equation, setEquation] = useState({
-    family: loadNumber * FAMILY_PLAN_MULTIPLIER - coupon,
-    other: loadNumber * NOT_FAMILY_PLAN_MULTIPLIER - coupon,
-    noPlan: loadNumber * NO_PLAN_MULTIPLIER - coupon,
+    family: "family",
+    other: "other",
+    noPlan: "noPlan",
   });
 
+  useEffect(() => {
+    console.log('setCost() start')
+    setCost();
+    console.log('setCost() end')
+
+  });
+
+  const setCost = () => {
+    if (priceEquation == "family") {
+      console.log("lbsForJob:  ", lbsForJob);
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * FAMILY_PLAN_MULTIPLIER - coupon)
+      );
+      return;
+    }
+    if (priceEquation == "other") {
+      console.log("lbsForJob:  ", lbsForJob);
+
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * NOT_FAMILY_PLAN_MULTIPLIER - coupon)
+      );
+      return;
+    }
+    if (priceEquation == "noPlan") {
+      console.log("lbsForJob:  ", lbsForJob);
+
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * NO_PLAN_MULTIPLIER - coupon)
+      );
+      return;
+    }
+  };
+
   const [priceEquation, setPriceEquation] = useState();
+  const [finalCost, setFinalCost] = useState();
 
   const [price, setPrice] = useState({
     withOutSubscription: 12,
@@ -110,8 +147,11 @@ const NewOrderScreen = (props) => {
   //
   // screen functions
   useEffect(() => {
-    setPickUpAddress(props.route.params.address); // here
+    setPickUpAddress(props.route.params.address);
     onTimeChange();
+    // setLbsLeft(props.subscription.lbsLeft);
+    // console.log("CHANGE THIS");
+    setLbsLeft(0);
   }, []);
 
   useEffect(() => {
@@ -148,8 +188,7 @@ const NewOrderScreen = (props) => {
         next();
         break;
       case 4:
-        // flow_Payment_Subscription
-
+        next();
         break;
 
       default:
@@ -160,12 +199,15 @@ const NewOrderScreen = (props) => {
   };
 
   useEffect(() => {
+    console.log("flow_Payment_Subscription() initiated");
     flow_Payment_Subscription();
+    console.log("flow_Payment_Subscription() complete");
   }, []);
 
   const flow_Payment_Subscription = () => {
-    const payment = props.payment;
-    const subscription = props.subscription;
+    // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
+    const { payment, subscription } = props;
+
     console.log("payment:  ", payment);
     console.log("subscription:  ", subscription);
 
@@ -177,35 +219,72 @@ const NewOrderScreen = (props) => {
         console.log(
           "user does not have a card on file, sending user to payment screen"
         );
-        props.navigation.navigate("Payment");
+        // props.navigation.navigate("Payment");
         return;
       }
       console.log("user has a card on file");
+      console.log("setting the price equation to: equation.noPlan");
       setPriceEquation(equation.noPlan);
       return;
     }
 
     console.log("user has a plan");
 
-    var date2 = new Date(subscription.periodEnd); // data manipulation
-    console.log("subscription ends:  ", subscription.periodEnd);
-    console.log("today:              ", TODAYS_DATE);
-    const dateComparison = date2.getTime() > TODAYS_DATE.getTime();
-    console.log("is the subscription valid?:   ", dateComparison);
- 
-    subscription.status = "active"; // delete me
-    dateComparison = true; // delete me
+    var subscriptionEnds = new Date(subscription.periodEnd); // data manipulation
+    console.log("subscription ends:  ", subscriptionEnds);
+    console.log("today date:         ", TODAYS_DATE);
 
-    if (!dateComparison && subscription.status !== "active") {
+    let dateComparison = subscriptionEnds.getTime() < TODAYS_DATE.getTime();
+
+    console.log("is the subscription invalid?:   ", dateComparison);
+    console.log("subscription status:  ", subscription.status);
+
+    // subscription.status = "active"; // delete me
+    // dateComparison = true; // delete me
+
+    if (!dateComparison || subscription.status !== "active") {
       console.log("user subscription is not valid");
+      console.log("setting the price equation to: equation.other");
+
       setPriceEquation(equation.other);
+      return;
     }
 
     console.log("user subscription is valid");
+    if (subscription.plan == "Family") {
+      console.log("user has a Family subscription");
+
+      if (subscription.lbsLeft >= lbsForJob) {
+        console.log("user has the necessary lbs to complete job");
+        console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
+        setLbsLeft(subscription.lbsLeft - lbsForJob);
+        return;
+      }
+
+      console.log("user does not have the necesary lbs to complete the job");
+      console.log("setting the price equation to: equation.family");
+      setPriceEquation(equation.family);
+      return;
+    }
+
+    console.log("user has either Student, Plus, or Student");
+
+    if (subscription.lbsLeft >= lbsForJob) {
+      console.log("user has the necessary lbs to complete job");
+      console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
+      setLbsLeft(subscription.lbsLeft - lbsForJob);
+      return;
+    }
+    console.log("user does not have the necesary lbs to complete the job");
+    console.log("setting the price equation to: equation.other");
+    setPriceEquation(equation.other);
+    return;
   };
 
   const next = () => {
     console.log("next()");
+    console.log("ITEMS.length:  ", ITEMS.length);
+    console.log("index + 1:  ", index + 1);
     if (ITEMS.length > index + 1) {
       setIndex(index + 1);
       flatListRef.scrollToIndex({ animated: true, index: index + 1 });
@@ -213,10 +292,6 @@ const NewOrderScreen = (props) => {
   };
   const previous = () => {
     console.log("previous()");
-    if (index === 5) {
-      singUpAPI();
-      return;
-    }
     if (0 <= index - 1) {
       setIndex(index - 1);
       flatListRef.scrollToIndex({ animated: true, index: index - 1 });
@@ -419,16 +494,6 @@ const NewOrderScreen = (props) => {
     this.mapView.animateToRegion(initialRegion, 2000);
     console.log("goToInitialLocation() complete");
   }
-  useEffect(() => {
-    console.log("NewOrderScreen useEffect() [pickUpAddress]");
-    clearTimeout(acTimeout);
-    acTimeout = setTimeout(function () {
-      console.log("inside useEffect!");
-      addresAutoComplete();
-    }, 1200);
-  }, [pickUpAddress]);
-  // functions that run  the first time page loads
-  //
 
   const addresAutoComplete = async () => {
     console.log(
@@ -534,35 +599,35 @@ const NewOrderScreen = (props) => {
   //
   // card #4 functions
   const setLoadImage = () => {
-    if (loadNumber == 1) {
+    if (lbsForJob == 1) {
       return (
         <Image
           style={styles.imageDetails}
           source={require("../../assets/1_load_icon.png")}
         />
       );
-    } else if (loadNumber == 1.5) {
+    } else if (lbsForJob == 1.5) {
       return (
         <Image
           style={styles.imageDetails}
           source={require("../../assets/1.5_load_icon.png")}
         />
       );
-    } else if (loadNumber == 2) {
+    } else if (lbsForJob == 2) {
       return (
         <Image
           style={styles.imageDetails}
           source={require("../../assets/2_load_icon.png")}
         />
       );
-    } else if (loadNumber == 2.5) {
+    } else if (lbsForJob == 2.5) {
       return (
         <Image
           style={styles.imageDetails}
           source={require("../../assets/2.5_load_icon.png")}
         />
       );
-    } else if (loadNumber == 3) {
+    } else if (lbsForJob == 3) {
       return (
         <Image
           style={styles.imageDetails}
@@ -571,51 +636,182 @@ const NewOrderScreen = (props) => {
       );
     }
   };
-  const changeLoadNumber = (sign) => {
-    console.log("changeLoadNumber() initiated");
-    console.log("sign: ", sign);
-    console.log("loadNumber: ", loadNumber);
-    console.log('sign == "+"   ', sign == "+");
-    console.log('sign == "-"   ', sign == "-");
 
+  const returnWarningAboutLbsLeft = () => {
+    console.log("returnWarningAboutLbsLeft()");
+    if (lbsLeft - lbsForJob < 0) {
+      return (
+        <>
+          <Text
+            style={{ backgroundColor: "#ffe6e6", padding: 5, borderRadius: 20 }}
+          >
+            You are going over the monthly limit, there will be an additional
+            cost
+          </Text>
+          {/*  */}
+          <View style={styles.fieldContainer}>
+            <View style={styles.fieldNameContainer}>
+              <Text style={styles.fieldNameTxT}> Cost </Text>
+            </View>
+            <View style={styles.fieldValueContainer}>
+              <Text style={styles.fieldValueTxT}>{finalCost}</Text>
+            </View>
+          </View>
+          {/* here */}
+        </>
+      );
+    }
+  };
+  // here
+  const returnSubscriptionPricesOrSubInformation = () => {
+    if (props.subscription.plan == "N/A") {
+      return (
+        <View>
+          <Text>props.subscription.plan=='N/A'</Text>
+
+          <>
+            <BUTTON text={"$" + price.withOutSubscription} />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 10,
+              }}
+            >
+              <View
+                style={[
+                  {
+                    height: 1,
+                    width: "30%",
+                    backgroundColor: "grey",
+                  },
+                  { ...props.style },
+                ]}
+              />
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: FIELD_VALUE_FONT_SIZE,
+                  fontWeight: "bold",
+                }}
+              >
+                {" "}
+                or{" "}
+              </Text>
+              <View
+                style={[
+                  {
+                    height: 1,
+                    width: "30%",
+                    backgroundColor: "grey",
+                  },
+                  { ...props.style },
+                ]}
+              />
+            </View>
+
+            <BUTTON
+              style={{ marginBottom: 1, marginTop: 0 }}
+              text={"$" + price.withSubscription}
+            />
+            <Text>with a subscription</Text>
+          </>
+        </View>
+      );
+    }
+    // returns table with data about subscription if present
+    return (
+      <View>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Subscription </Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>{props.subscription.plan}</Text>
+          </View>
+        </View>
+        {/*  */}
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Current status </Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {props.subscription.status}
+            </Text>
+          </View>
+        </View>
+        {/*  */}
+        <DIVIDER />
+        {/*  */}
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>lbsLeft </Text>
+          </View>
+          <View
+            style={[styles.fieldValueContainer, { flexDirection: "column" }]}
+          >
+            <Text
+              style={[
+                styles.fieldValueTxT,
+                { textAlign: "center", fontSize: 12 },
+              ]}
+            >
+              lbsleft - lbsForJob
+            </Text>
+            <Text style={[styles.fieldValueTxT, { textAlign: "center" }]}>
+              {lbsLeft - lbsForJob}
+            </Text>
+            {returnWarningAboutLbsLeft()}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const changeLoadNumber = (sign) => {
     if (sign == "+") {
-      if (loadNumber == 3) {
+      console.log("adding to lbs:  ", lbsForJob);
+      console.log("priceEquation:  ", priceEquation);
+      if (lbsForJob == 3) {
         return;
       }
-      setLoadNumber(loadNumber + 0.5);
+      setLbsForJob(lbsForJob + 0.5);
       return;
     }
-    if (loadNumber == 1) {
+    if (lbsForJob == 1) {
       return;
     }
-    setLoadNumber(loadNumber - 0.5);
+    setLbsForJob(lbsForJob - 0.5);
     return;
   };
   useEffect(() => {
-    setPriceBasedOnLoadNumber(loadNumber);
-  }, [loadNumber]);
-  const setPriceBasedOnLoadNumber = (loadNumber) => {
-    if (loadNumber == 1) {
+    setPriceBasedOnLoadNumber(lbsForJob);
+  }, [lbsForJob]);
+
+  const setPriceBasedOnLoadNumber = (lbsForJob) => {
+    if (lbsForJob == 1) {
       setPrice({
         withOutSubscription: (12.0).toFixed(2),
         withSubscription: (9.7).toFixed(2),
       });
-    } else if (loadNumber == 1.5) {
+    } else if (lbsForJob == 1.5) {
       setPrice({
         withOutSubscription: (18.0).toFixed(2),
         withSubscription: 14.55,
       });
-    } else if (loadNumber == 2) {
+    } else if (lbsForJob == 2) {
       setPrice({
         withOutSubscription: (24.0).toFixed(2),
         withSubscription: 19.39,
       });
-    } else if (loadNumber == 2.5) {
+    } else if (lbsForJob == 2.5) {
       setPrice({
         withOutSubscription: (30.0).toFixed(2),
         withSubscription: 24.24,
       });
-    } else if (loadNumber == 3) {
+    } else if (lbsForJob == 3) {
       setPrice({
         withOutSubscription: (36.0).toFixed(2),
         withSubscription: 29.09,
@@ -844,8 +1040,6 @@ const NewOrderScreen = (props) => {
       id: "card #2",
     },
     {
-      //<Map props={props.route.params} addressHelper={addressHelper} />,
-
       element: (
         <View style={styles.container}>
           <MapView
@@ -886,58 +1080,9 @@ const NewOrderScreen = (props) => {
     {
       element: (
         <View style={{ alignItems: "center" }}>
-          {}
-          <>
-            <BUTTON text={"$" + price.withOutSubscription} />
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-              }}
-            >
-              <View
-                style={[
-                  {
-                    height: 1,
-                    width: "30%",
-                    backgroundColor: "grey",
-                  },
-                  { ...props.style },
-                ]}
-              />
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontSize: FIELD_VALUE_FONT_SIZE,
-                  fontWeight: "bold",
-                }}
-              >
-                {" "}
-                or{" "}
-              </Text>
-              <View
-                style={[
-                  {
-                    height: 1,
-                    width: "30%",
-                    backgroundColor: "grey",
-                  },
-                  { ...props.style },
-                ]}
-              />
-            </View>
-
-            <BUTTON
-              style={{ marginBottom: 1, marginTop: 0 }}
-              text={"$" + price.withSubscription}
-            />
-            <Text>with a subscription</Text>
-          </>
-
+          {returnSubscriptionPricesOrSubInformation()}
           {setLoadImage()}
-          <Text>Amount of loads to wash: {loadNumber}</Text>
+          <Text>Amount of loads to wash: {lbsForJob}</Text>
 
           <View style={{ flexDirection: "row" }}>
             <BUTTON
@@ -975,13 +1120,15 @@ const NewOrderScreen = (props) => {
                 {
                   flexDirection: "column",
                   alignItems: "flex-end",
-                  backgroundColor: "red",
                 },
               ]}
             >
-              <Text style={styles.fieldValueTxT}>{pickUpAddress}</Text>
+              <Text style={[styles.fieldValueTxT, { color: "red" }]}>
+                {pickUpAddress}
+              </Text>
             </View>
           </View>
+
           {/*  */}
           <DIVIDER />
           {/*  */}
@@ -1071,10 +1218,11 @@ const NewOrderScreen = (props) => {
             </View>
             <View style={styles.fieldValueContainer}>
               <Text style={styles.fieldValueTxT}>
-                ${price.withOutSubscription}
+                ${lbsLeft - lbsForJob < 0 ? finalCost : 0}
               </Text>
             </View>
           </View>
+          <Text>lbsLeft - lbsForJob: {lbsLeft - lbsForJob}</Text>
         </ScrollView>
       ),
       id: "card #5",
@@ -1135,7 +1283,7 @@ const NewOrderScreen = (props) => {
 
           <BUTTON
             onPress={nextHelper}
-            text={index == 5 ? "Submit" : "Next"}
+            text={index == ITEMS.length - 1 ? "Submit" : "Next"}
             style={{ width: WIDTH * 0.35 }}
           />
         </View>
@@ -1196,7 +1344,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   fieldNameContainer: {
-    width: "40%",
+    width: "50%",
     // backgroundColor:'red',
   },
   fieldNameTxT: {
@@ -1205,7 +1353,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   fieldValueContainer: {
-    width: "60%",
+    width: "50%",
     flexDirection: "row",
     justifyContent: "flex-end",
   },
@@ -1296,3 +1444,5 @@ function mapStateToProps({ payment, subscription }) {
   return { payment, subscription };
 }
 export default connect(mapStateToProps)(NewOrderScreen);
+
+//returnSubscriptionPricesOrSubInformation

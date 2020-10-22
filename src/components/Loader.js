@@ -14,7 +14,7 @@ console.log(WIDTH * 0.25);
 console.log(WIDTH * 0.25 * 0.59);
 export default class Loader extends Component {
   UNSAFE_componentWillMount() {
-    console.log("UNSAFE_componentWillMount() requires change");
+    console.log('UNSAFE_componentWillMount() requires change')
     this.animatedValue = new Animated.Value(0);
     console.log("Loader element displaying");
   }
@@ -40,42 +40,45 @@ export default class Loader extends Component {
       transform: [{ rotate: interpolateRotation }],
     };
     return (
-      <View style={[styles.container, { ...this.props.style }]}>
-        <Image
-          style={{
-            height: WIDTH * 0.25,
-            width: WIDTH * 0.9,
-            borderWidth: 0,
-          }}
-          source={require("../assets/Launch_Logo.png")}
-        />
-        {/*  */}
-        {/*  */}
-        <Animated.View
-          style={[
-            {
-              position: "absolute",
-              left: WIDTH * 0.25 * 0.23,
-              top: WIDTH * 0.9 * 0.056,
-            },
-            animatedStyle,
-          ]}
-        >
+      <View style={[styles.container,{...this.props.style}]}>
           <Image
             style={{
-              height: WIDTH * 0.25 * 0.59,
-              width: WIDTH * 0.25 * 0.59,
+              height: WIDTH * 0.25,
+              width: WIDTH * 0.9,
+              borderWidth: 0,
             }}
-            source={require("../assets/spinner.png")}
+            source={require("../assets/Launch_Logo.png")}
           />
-        </Animated.View>
+          {/*  */}
+          {/*  */}
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                left: WIDTH * 0.25 * 0.23,
+                top: WIDTH * 0.9 * 0.056,
+              },
+              animatedStyle,
+            ]}
+          >
+            <Image
+              style={{
+                height: WIDTH * 0.25 * 0.59,
+                width: WIDTH * 0.25 * 0.59,
+              }}
+              source={require("../assets/spinner.png")}
+            />
+          </Animated.View>
+       
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    
+  },
   box: {},
   text: {
     color: "#FFF",

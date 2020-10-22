@@ -21,6 +21,8 @@ const AuthScreen = (props) => {
     }
     locationAndTokenFlow();
     props.doAuthLogin(props);
+
+
   }, []);
 
   return (

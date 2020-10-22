@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Component } from "react";
 import { Dimensions, TouchableOpacity, Text, Image, View } from "react-native";
+
 
 export const DIVIDER = (props) => {
   return (
@@ -102,8 +103,9 @@ export const BUTTON = (props) => {
       style={[BUTTON_CONTAINER, { ...props.style }]}
       onPress={props.onPress}
     >
-      <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>{props.text || props.children}</Text>
-    
+      <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>
+        {props.text || props.children}
+      </Text>
     </TouchableOpacity>
   );
 };
