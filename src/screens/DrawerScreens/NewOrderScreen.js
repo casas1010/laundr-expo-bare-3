@@ -44,7 +44,7 @@ import {
   SHADOW,
   DIVIDER,
 } from "../../components/Items/";
-// import
+
 import Header from "../../components/Header";
 import Container from "../../components/Container";
 
@@ -56,19 +56,18 @@ var MONTH = TODAYS_DATE.getMonth() + 1;
 var HOUR = TODAYS_DATE.getHours(); //To get the Current Hours
 var MINUTE = TODAYS_DATE.getMinutes();
 
+const LBS_PER_LOAD = 8;
 const _WIDTH = WIDTH * 0.35;
-const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs
-const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs
+const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs*load
+const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs*load
 const NO_PLAN_MULTIPLIER = 1.5;
 
 const NewOrderScreen = (props) => {
-  //
   // screen variables
   const [index, setIndex] = useState(0);
 
   //
   // card #1 variables
-
   const [pickUpDate, setPickUpDate] = useState({ month: MONTH, date: DATE });
   const [displayTime, setDisplayTime] = useState({
     hour: 12,
@@ -86,57 +85,25 @@ const NewOrderScreen = (props) => {
   const [separate, setSeparate] = useState(false);
   const [towelsSheets, setTowelsSheets] = useState(false);
   const [preferecenNote, setPreferenceNote] = useState();
+
   //
   // card #3 variables
   const [pickUpAddress, setPickUpAddress] = useState();
+  const [initialRegion, setInitialRegion] = useState(undefined);
+  const [newRegion, setNewRegion] = useState();
+  const [loading, setLoading] = useState(true);
+  const [
+    autoCompletePossibleLocations,
+    setAutoCompletePossibleLocations,
+  ] = useState({ display: true, array: [] });
   //
   // card #4 variables
-  const [lbsForJob, setLbsForJob] = useState(1);
-  const [overLbsBackgroundColor, setOverLbsBackgroundColor] = useState("white");
-  const [numberOfFlashes, setNumberOfFlashes] = useState(0);
 
+  const [lbsForJob, setLbsForJob] = useState(8);
+  const [loadForJob, setLoadForJob] = useState(1);
   const [lbsLeft, setLbsLeft] = useState();
   const [coupon, setCoupon] = useState(0);
-
-  const [equation, setEquation] = useState({
-    family: "family",
-    other: "other",
-    noPlan: "noPlan",
-  });
-
-  useEffect(() => {
-    console.log('setCost() start')
-    setCost();
-    console.log('setCost() end')
-
-  });
-
-  const setCost = () => {
-    if (priceEquation == "family") {
-      console.log("lbsForJob:  ", lbsForJob);
-      setFinalCost(
-        Math.abs((lbsLeft - lbsForJob) * FAMILY_PLAN_MULTIPLIER - coupon)
-      );
-      return;
-    }
-    if (priceEquation == "other") {
-      console.log("lbsForJob:  ", lbsForJob);
-
-      setFinalCost(
-        Math.abs((lbsLeft - lbsForJob) * NOT_FAMILY_PLAN_MULTIPLIER - coupon)
-      );
-      return;
-    }
-    if (priceEquation == "noPlan") {
-      console.log("lbsForJob:  ", lbsForJob);
-
-      setFinalCost(
-        Math.abs((lbsLeft - lbsForJob) * NO_PLAN_MULTIPLIER - coupon)
-      );
-      return;
-    }
-  };
-
+  const [equation, setEquation] = useState();
   const [priceEquation, setPriceEquation] = useState();
   const [finalCost, setFinalCost] = useState();
 
@@ -144,19 +111,11 @@ const NewOrderScreen = (props) => {
     withOutSubscription: 12,
     withSubscription: 9.7,
   });
+
+
+
   //
   // screen functions
-  useEffect(() => {
-    setPickUpAddress(props.route.params.address);
-    onTimeChange();
-    // setLbsLeft(props.subscription.lbsLeft);
-    // console.log("CHANGE THIS");
-    setLbsLeft(0);
-  }, []);
-
-  useEffect(() => {
-    onTimeChange();
-  }, [pickUpDate]);
 
   const nextHelper = async () => {
     const indexOnScreen = index + 1;
@@ -198,89 +157,6 @@ const NewOrderScreen = (props) => {
     }
   };
 
-  useEffect(() => {
-    console.log("flow_Payment_Subscription() initiated");
-    flow_Payment_Subscription();
-    console.log("flow_Payment_Subscription() complete");
-  }, []);
-
-  const flow_Payment_Subscription = () => {
-    // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
-    const { payment, subscription } = props;
-
-    console.log("payment:  ", payment);
-    console.log("subscription:  ", subscription);
-
-    // check user plan
-    if (subscription.plan == "N/A") {
-      console.log("user has no plan");
-
-      if (payment.brand === "") {
-        console.log(
-          "user does not have a card on file, sending user to payment screen"
-        );
-        // props.navigation.navigate("Payment");
-        return;
-      }
-      console.log("user has a card on file");
-      console.log("setting the price equation to: equation.noPlan");
-      setPriceEquation(equation.noPlan);
-      return;
-    }
-
-    console.log("user has a plan");
-
-    var subscriptionEnds = new Date(subscription.periodEnd); // data manipulation
-    console.log("subscription ends:  ", subscriptionEnds);
-    console.log("today date:         ", TODAYS_DATE);
-
-    let dateComparison = subscriptionEnds.getTime() < TODAYS_DATE.getTime();
-
-    console.log("is the subscription invalid?:   ", dateComparison);
-    console.log("subscription status:  ", subscription.status);
-
-    // subscription.status = "active"; // delete me
-    // dateComparison = true; // delete me
-
-    if (!dateComparison || subscription.status !== "active") {
-      console.log("user subscription is not valid");
-      console.log("setting the price equation to: equation.other");
-
-      setPriceEquation(equation.other);
-      return;
-    }
-
-    console.log("user subscription is valid");
-    if (subscription.plan == "Family") {
-      console.log("user has a Family subscription");
-
-      if (subscription.lbsLeft >= lbsForJob) {
-        console.log("user has the necessary lbs to complete job");
-        console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
-        setLbsLeft(subscription.lbsLeft - lbsForJob);
-        return;
-      }
-
-      console.log("user does not have the necesary lbs to complete the job");
-      console.log("setting the price equation to: equation.family");
-      setPriceEquation(equation.family);
-      return;
-    }
-
-    console.log("user has either Student, Plus, or Student");
-
-    if (subscription.lbsLeft >= lbsForJob) {
-      console.log("user has the necessary lbs to complete job");
-      console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
-      setLbsLeft(subscription.lbsLeft - lbsForJob);
-      return;
-    }
-    console.log("user does not have the necesary lbs to complete the job");
-    console.log("setting the price equation to: equation.other");
-    setPriceEquation(equation.other);
-    return;
-  };
-
   const next = () => {
     console.log("next()");
     console.log("ITEMS.length:  ", ITEMS.length);
@@ -290,6 +166,7 @@ const NewOrderScreen = (props) => {
       flatListRef.scrollToIndex({ animated: true, index: index + 1 });
     }
   };
+
   const previous = () => {
     console.log("previous()");
     if (0 <= index - 1) {
@@ -297,6 +174,7 @@ const NewOrderScreen = (props) => {
       flatListRef.scrollToIndex({ animated: true, index: index - 1 });
     }
   };
+
   const setHeaderText = (index) => {
     if (index == 0) return "Schedule Order";
     else if (index == 1) return "Set Preference";
@@ -308,12 +186,15 @@ const NewOrderScreen = (props) => {
 
   //
   // card #1 functions
+  useEffect(() => {
+    onTimeChange();
+  }, [pickUpDate]);
   const setDay = (dateDetails) => {
     console.log("setDate()");
     console.log("date set for laundry:  ", dateDetails);
-    console.log("pickUpDate.month        :", dateDetails.date);
     setPickUpDate(dateDetails);
   };
+
   const onTimeChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setDate(currentDate);
@@ -325,7 +206,7 @@ const NewOrderScreen = (props) => {
       allowed: true,
     };
 
-    // the following code {} changes the time format only
+    // the following code {} only changes the time format
     {
       console.log("hour before modification:  ", parseInt(time.hour));
       if (3 >= parseInt(time.hour) && parseInt(time.hour) >= 0) {
@@ -402,10 +283,11 @@ const NewOrderScreen = (props) => {
       }
     }
   };
+
   const setUserHelper = (item) => {
-    // setUserType(item);
     showModalUser();
   };
+
   const showModalUser = () => {
     console.log("showModalUser()");
     setUserModalView(!userModalView);
@@ -426,6 +308,7 @@ const NewOrderScreen = (props) => {
       />
     );
   };
+
   const setDelicateImage = () => {
     return delicate ? (
       <Image
@@ -439,6 +322,7 @@ const NewOrderScreen = (props) => {
       />
     );
   };
+
   const setSeparateImage = () => {
     return separate ? (
       <Image
@@ -452,6 +336,7 @@ const NewOrderScreen = (props) => {
       />
     );
   };
+
   const setTowelsSheetsImage = () => {
     return towelsSheets ? (
       <Image
@@ -465,17 +350,12 @@ const NewOrderScreen = (props) => {
       />
     );
   };
+
   //
   // card #3 functions
-  const [initialRegion, setInitialRegion] = useState(undefined);
-  const [newRegion, setNewRegion] = useState();
-  const [loading, setLoading] = useState(true);
-
-  const [
-    autoCompletePossibleLocations,
-    setAutoCompletePossibleLocations,
-  ] = useState({ display: true, array: [] });
-  const [error, setError] = useState("");
+  useEffect(() => {
+    setPickUpAddress(props.route.params.address);
+  }, []);
 
   // functions that run  the first time page loads
   //
@@ -597,43 +477,134 @@ const NewOrderScreen = (props) => {
     });
   };
   //
+  //
+
+  //
   // card #4 functions
-  const setLoadImage = () => {
-    if (lbsForJob == 1) {
-      return (
-        <Image
-          style={styles.imageDetails}
-          source={require("../../assets/1_load_icon.png")}
-        />
+  useEffect(() => {
+    console.log('flow_Payment_Subscription() initiated')
+    flow_Payment_Subscription();
+    console.log('flow_Payment_Subscription() complete')
+  }, []);
+
+  useEffect(() => {
+    setCost();
+  },[priceEquation]);
+
+  const flow_Payment_Subscription = () => {
+    // function sets the price equation to use to calculte the
+    // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
+    const { payment, subscription } = props;
+    // console.log("payment:  ", payment);
+    // console.log("subscription:  ", subscription);
+
+    // check user plan
+    if (subscription.plan == "N/A") {
+      console.log("user has no plan");
+
+      if (payment.brand === "") {
+        console.log(
+          "user does not have a card on file, sending user to payment screen"
+        );
+        // props.navigation.navigate("Payment");
+        // return;
+      }
+      console.log("user has a card on file");
+      console.log("setting the price equation to: noPlan");
+      setPriceEquation('noPlan');
+      return;
+    }
+
+    console.log("user has a plan");
+
+    var subscriptionEnds = new Date(subscription.periodEnd); // data manipulation
+    console.log("subscription ends:  ", subscriptionEnds);
+    console.log("today date:         ", TODAYS_DATE);
+
+    let dateComparison = subscriptionEnds.getTime() < TODAYS_DATE.getTime();
+
+    console.log("is the subscription invalid?:   ", dateComparison);
+    console.log("subscription status:  ", subscription.status);
+
+    // subscription.status = "active"; // delete me
+    // dateComparison = true; // delete me
+
+    if (!dateComparison || subscription.status !== "active") {
+      console.log("user subscription is not valid");
+      console.log("setting the price equation to: other");
+
+      setPriceEquation('other');
+      return;
+    }
+
+    console.log("user subscription is valid");
+    if (subscription.plan == "Family") {
+      console.log("user has a Family subscription");
+
+      if (subscription.lbsLeft >= lbsForJob) {
+        console.log("user has the necessary lbs to complete job");
+        console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
+        setLbsLeft(subscription.lbsLeft - lbsForJob);
+        return;
+      }
+
+      console.log("user does not have the necesary lbs to complete the job");
+      console.log("setting the price equation to: family");
+      setPriceEquation('family');
+      return;
+    }
+
+    console.log("user has either Student, Plus, or Student");
+
+    if (subscription.lbsLeft >= lbsForJob) {
+      console.log("user has the necessary lbs to complete job");
+      console.log("lbs left:  ", subscription.lbsLeft - lbsForJob);
+      setLbsLeft(subscription.lbsLeft - lbsForJob);
+      return;
+    }
+    console.log("user does not have the necesary lbs to complete the job");
+    console.log("setting the price equation to: other");
+    setPriceEquation('other');
+    return;
+  };
+
+
+  useEffect(() => {
+    // setLbsLeft(props.subscription.lbsLeft);
+    console.log("CHANGE THIS");
+    console.log("CHANGE THIS");
+    console.log("CHANGE THIS");
+    setLbsLeft(8);
+  }, []);
+  useEffect(() => {
+    setPriceBasedOnLoadNumber(loadForJob);
+    setLbsForJob(LBS_PER_LOAD * loadForJob);
+  }, [loadForJob]);
+
+
+  const setCost = () => {
+    if (priceEquation == "family") {
+      console.log("lbsForJob:  ", lbsForJob);
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * FAMILY_PLAN_MULTIPLIER - coupon)
       );
-    } else if (lbsForJob == 1.5) {
-      return (
-        <Image
-          style={styles.imageDetails}
-          source={require("../../assets/1.5_load_icon.png")}
-        />
+      return;
+    }
+    if (priceEquation == "other") {
+      console.log("lbsForJob:  ", lbsForJob);
+
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * NOT_FAMILY_PLAN_MULTIPLIER - coupon)
       );
-    } else if (lbsForJob == 2) {
-      return (
-        <Image
-          style={styles.imageDetails}
-          source={require("../../assets/2_load_icon.png")}
-        />
+      return;
+    }
+    if (priceEquation == "noPlan") {
+      console.log("lbsForJob:  ", lbsForJob);
+
+      setFinalCost(
+        Math.abs((lbsLeft - lbsForJob) * NO_PLAN_MULTIPLIER - coupon)
       );
-    } else if (lbsForJob == 2.5) {
-      return (
-        <Image
-          style={styles.imageDetails}
-          source={require("../../assets/2.5_load_icon.png")}
-        />
-      );
-    } else if (lbsForJob == 3) {
-      return (
-        <Image
-          style={styles.imageDetails}
-          source={require("../../assets/3_load_icon.png")}
-        />
-      );
+      return;
     }
   };
 
@@ -654,7 +625,7 @@ const NewOrderScreen = (props) => {
               <Text style={styles.fieldNameTxT}> Cost </Text>
             </View>
             <View style={styles.fieldValueContainer}>
-              <Text style={styles.fieldValueTxT}>{finalCost}</Text>
+              <Text style={styles.fieldValueTxT}>{finalCost} $/lbs</Text>
             </View>
           </View>
           {/* here */}
@@ -662,64 +633,95 @@ const NewOrderScreen = (props) => {
       );
     }
   };
-  // here
+
+ 
+
+  const setPriceBasedOnLoadNumber = (loadForJob) => {
+    // only shown if user has no membership
+    if (loadForJob == 1) {
+      setPrice({
+        withOutSubscription: (12.0).toFixed(2),
+        withSubscription: (9.7).toFixed(2),
+      });
+    } else if (loadForJob == 1.5) {
+      setPrice({
+        withOutSubscription: (18.0).toFixed(2),
+        withSubscription: 14.55,
+      });
+    } else if (loadForJob == 2) {
+      setPrice({
+        withOutSubscription: (24.0).toFixed(2),
+        withSubscription: 19.39,
+      });
+    } else if (loadForJob == 2.5) {
+      setPrice({
+        withOutSubscription: (30.0).toFixed(2),
+        withSubscription: 24.24,
+      });
+    } else if (loadForJob == 3) {
+      setPrice({
+        withOutSubscription: (36.0).toFixed(2),
+        withSubscription: 29.09,
+      });
+    }
+  };
+
   const returnSubscriptionPricesOrSubInformation = () => {
     if (props.subscription.plan == "N/A") {
       return (
-        <View>
-          <Text>props.subscription.plan=='N/A'</Text>
-
-          <>
-            <BUTTON text={"$" + price.withOutSubscription} />
+        <View style={{ alignItems: "center" }}>
+          <BUTTON
+            style={{ width: WIDTH * 0.5 }}
+            text={"$" + price.withOutSubscription}
+          />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 10,
+            }}
+          >
             <View
+              style={[
+                {
+                  height: 1,
+                  width: "30%",
+                  backgroundColor: "grey",
+                },
+                { ...props.style },
+              ]}
+            />
+            <Text
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
+                textAlign: "center",
+                fontSize: FIELD_VALUE_FONT_SIZE,
+                fontWeight: "bold",
               }}
             >
-              <View
-                style={[
-                  {
-                    height: 1,
-                    width: "30%",
-                    backgroundColor: "grey",
-                  },
-                  { ...props.style },
-                ]}
-              />
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontSize: FIELD_VALUE_FONT_SIZE,
-                  fontWeight: "bold",
-                }}
-              >
-                {" "}
-                or{" "}
-              </Text>
-              <View
-                style={[
-                  {
-                    height: 1,
-                    width: "30%",
-                    backgroundColor: "grey",
-                  },
-                  { ...props.style },
-                ]}
-              />
-            </View>
-
-            <BUTTON
-              style={{ marginBottom: 1, marginTop: 0 }}
-              text={"$" + price.withSubscription}
+              or
+            </Text>
+            <View
+              style={[
+                {
+                  height: 1,
+                  width: "30%",
+                  backgroundColor: "grey",
+                },
+                { ...props.style },
+              ]}
             />
-            <Text>with a subscription</Text>
-          </>
+          </View>
+
+          <BUTTON
+            style={{ marginBottom: 1, marginTop: 0, width: WIDTH * 0.5 }}
+            text={"$" + price.withSubscription}
+          />
+          <Text>with a subscription</Text>
         </View>
       );
     }
+
     // returns table with data about subscription if present
     return (
       <View>
@@ -772,53 +774,60 @@ const NewOrderScreen = (props) => {
 
   const changeLoadNumber = (sign) => {
     if (sign == "+") {
-      console.log("adding to lbs:  ", lbsForJob);
-      console.log("priceEquation:  ", priceEquation);
-      if (lbsForJob == 3) {
+      if (loadForJob == 3) {
         return;
       }
-      setLbsForJob(lbsForJob + 0.5);
+      setLoadForJob(loadForJob + 0.5);
       return;
     }
-    if (lbsForJob == 1) {
+    if (loadForJob == 1) {
       return;
     }
-    setLbsForJob(lbsForJob - 0.5);
+    setLoadForJob(loadForJob - 0.5);
     return;
   };
-  useEffect(() => {
-    setPriceBasedOnLoadNumber(lbsForJob);
-  }, [lbsForJob]);
-
-  const setPriceBasedOnLoadNumber = (lbsForJob) => {
-    if (lbsForJob == 1) {
-      setPrice({
-        withOutSubscription: (12.0).toFixed(2),
-        withSubscription: (9.7).toFixed(2),
-      });
-    } else if (lbsForJob == 1.5) {
-      setPrice({
-        withOutSubscription: (18.0).toFixed(2),
-        withSubscription: 14.55,
-      });
-    } else if (lbsForJob == 2) {
-      setPrice({
-        withOutSubscription: (24.0).toFixed(2),
-        withSubscription: 19.39,
-      });
-    } else if (lbsForJob == 2.5) {
-      setPrice({
-        withOutSubscription: (30.0).toFixed(2),
-        withSubscription: 24.24,
-      });
-    } else if (lbsForJob == 3) {
-      setPrice({
-        withOutSubscription: (36.0).toFixed(2),
-        withSubscription: 29.09,
-      });
+  const setLoadImage = () => {
+    if (loadForJob == 1) {
+      return (
+        <Image
+          style={styles.imageDetails}
+          source={require("../../assets/1_load_icon.png")}
+        />
+      );
+    } else if (loadForJob == 1.5) {
+      return (
+        <Image
+          style={styles.imageDetails}
+          source={require("../../assets/1.5_load_icon.png")}
+        />
+      );
+    } else if (loadForJob == 2) {
+      return (
+        <Image
+          style={styles.imageDetails}
+          source={require("../../assets/2_load_icon.png")}
+        />
+      );
+    } else if (loadForJob == 2.5) {
+      return (
+        <Image
+          style={styles.imageDetails}
+          source={require("../../assets/2.5_load_icon.png")}
+        />
+      );
+    } else if (loadForJob == 3) {
+      return (
+        <Image
+          style={styles.imageDetails}
+          source={require("../../assets/3_load_icon.png")}
+        />
+      );
     }
   };
 
+
+
+  // 
   const ITEMS = [
     {
       element: (
@@ -1082,7 +1091,8 @@ const NewOrderScreen = (props) => {
         <View style={{ alignItems: "center" }}>
           {returnSubscriptionPricesOrSubInformation()}
           {setLoadImage()}
-          <Text>Amount of loads to wash: {lbsForJob}</Text>
+          <Text>Amount of loads to wash: {loadForJob}</Text>
+          <Text>Amount of pounds to wash: {loadForJob * 8}</Text>
 
           <View style={{ flexDirection: "row" }}>
             <BUTTON
@@ -1257,16 +1267,6 @@ const NewOrderScreen = (props) => {
                 {item.element}
               </Container>
             );
-            // if (item.id == "card #3")
-            //   return (
-            //     <Map props={props.route.params} addressHelper={addressHelper} />
-            //   );
-            // else
-            //   return (
-            //     <Container style={{ height: HEIGHT * 0.73 }}>
-            //       {item.element}
-            //     </Container>
-            //   );
           }}
         />
         <View style={styles.container_buttons}>
