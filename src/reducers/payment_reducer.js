@@ -16,8 +16,9 @@ const paymentReducer = (state = {}, action) => {
     case GET_CARD_DETAILS:
       console.log("GET_CARD_DETAILS reducer invoked");
       // console.log("state:  ", state);
+     
       console.log("cardInfo:  ", action.payload);
-      return { ...action.payload };
+      return { ...state, ...action.payload };
     default:
       return state;
   }

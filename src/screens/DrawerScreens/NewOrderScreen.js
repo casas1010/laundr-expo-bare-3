@@ -60,7 +60,7 @@ const LBS_PER_LOAD = 8;
 const _WIDTH = WIDTH * 0.35;
 const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs*load
 const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs*load
-const NO_PLAN_MULTIPLIER = 1.5;
+const NO_PLAN_MULTIPLIER = 1.5; // $/lbs*load
 
 const NewOrderScreen = (props) => {
   // screen variables
@@ -104,15 +104,17 @@ const NewOrderScreen = (props) => {
   const [lbsLeft, setLbsLeft] = useState();
   const [coupon, setCoupon] = useState(0);
   const [equation, setEquation] = useState();
-  const [priceEquation, setPriceEquation] = useState();
+  const [subscriptionType, setSubscriptionType] = useState();
   const [finalCost, setFinalCost] = useState();
+  const [totalCost, setTotalCost] = useState();
 
   const [price, setPrice] = useState({
     withOutSubscription: 12,
     withSubscription: 9.7,
   });
 
-
+  //
+  // card #5
 
   //
   // screen functions
@@ -148,6 +150,13 @@ const NewOrderScreen = (props) => {
         break;
       case 4:
         next();
+        break;
+      case 5:
+        if(payment.brand === ""){
+          props.navigation.navigate("Payment");
+        return;
+        }
+        completeAndSubmitOrder();
         break;
 
       default:
@@ -357,7 +366,7 @@ const NewOrderScreen = (props) => {
     setPickUpAddress(props.route.params.address);
   }, []);
 
-  // functions that run  the first time page loads
+  // functions that run the first time page loads
   //
   useEffect(() => {
     console.log("useEffect() newOrderScreen []");
@@ -476,23 +485,30 @@ const NewOrderScreen = (props) => {
       display: true,
     });
   };
-  //
-  //
 
   //
   // card #4 functions
   useEffect(() => {
-    console.log('flow_Payment_Subscription() initiated')
+    console.log("flow_Payment_Subscription() initiated");
     flow_Payment_Subscription();
-    console.log('flow_Payment_Subscription() complete')
+    console.log("flow_Payment_Subscription() complete");
   }, []);
 
   useEffect(() => {
     setCost();
-  },[priceEquation]);
+  });
 
   const flow_Payment_Subscription = () => {
-    // function sets the price equation to use to calculte the
+    subscription.plan = "Family";
+    console.log('Delete me')
+    console.log('Delete me')
+    console.log('Delete me')
+    console.log('Delete me')
+    console.log('Delete me')
+    console.log('Delete me')
+    console.log('Delete me')
+
+    // function sets the price equation to use to calculate
     // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
     const { payment, subscription } = props;
     // console.log("payment:  ", payment);
@@ -511,7 +527,7 @@ const NewOrderScreen = (props) => {
       }
       console.log("user has a card on file");
       console.log("setting the price equation to: noPlan");
-      setPriceEquation('noPlan');
+      setSubscriptionType("noPlan");
       return;
     }
 
@@ -533,7 +549,7 @@ const NewOrderScreen = (props) => {
       console.log("user subscription is not valid");
       console.log("setting the price equation to: other");
 
-      setPriceEquation('other');
+      setSubscriptionType("other");
       return;
     }
 
@@ -550,7 +566,7 @@ const NewOrderScreen = (props) => {
 
       console.log("user does not have the necesary lbs to complete the job");
       console.log("setting the price equation to: family");
-      setPriceEquation('family');
+      setSubscriptionType("family");
       return;
     }
 
@@ -564,33 +580,38 @@ const NewOrderScreen = (props) => {
     }
     console.log("user does not have the necesary lbs to complete the job");
     console.log("setting the price equation to: other");
-    setPriceEquation('other');
+    setSubscriptionType("other");
     return;
   };
 
+  const completeAndSubmitOrder = () => {
+    // lbsLeft - lbsForJob < 0 ? finalCost : 0
+    // lbsLeft - lbsForJob < 0 ? finalCost : 0
+    // initiated API call here
+  };
 
   useEffect(() => {
     // setLbsLeft(props.subscription.lbsLeft);
     console.log("CHANGE THIS");
     console.log("CHANGE THIS");
     console.log("CHANGE THIS");
-    setLbsLeft(8);
+    setLbsLeft(20);
   }, []);
+
   useEffect(() => {
     setPriceBasedOnLoadNumber(loadForJob);
     setLbsForJob(LBS_PER_LOAD * loadForJob);
   }, [loadForJob]);
 
-
   const setCost = () => {
-    if (priceEquation == "family") {
+    if (subscriptionType == "family") {
       console.log("lbsForJob:  ", lbsForJob);
       setFinalCost(
         Math.abs((lbsLeft - lbsForJob) * FAMILY_PLAN_MULTIPLIER - coupon)
       );
       return;
     }
-    if (priceEquation == "other") {
+    if (subscriptionType == "other") {
       console.log("lbsForJob:  ", lbsForJob);
 
       setFinalCost(
@@ -598,7 +619,7 @@ const NewOrderScreen = (props) => {
       );
       return;
     }
-    if (priceEquation == "noPlan") {
+    if (subscriptionType == "noPlan") {
       console.log("lbsForJob:  ", lbsForJob);
 
       setFinalCost(
@@ -633,8 +654,6 @@ const NewOrderScreen = (props) => {
       );
     }
   };
-
- 
 
   const setPriceBasedOnLoadNumber = (loadForJob) => {
     // only shown if user has no membership
@@ -786,6 +805,7 @@ const NewOrderScreen = (props) => {
     setLoadForJob(loadForJob - 0.5);
     return;
   };
+
   const setLoadImage = () => {
     if (loadForJob == 1) {
       return (
@@ -825,9 +845,6 @@ const NewOrderScreen = (props) => {
     }
   };
 
-
-
-  // 
   const ITEMS = [
     {
       element: (
