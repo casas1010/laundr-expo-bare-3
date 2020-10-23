@@ -1,6 +1,7 @@
 import React from "react";
 import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Animatable from "react-native-animatable";
 
 const SearchBar = ({
   term,
@@ -15,6 +16,7 @@ const SearchBar = ({
   placeholder,
 }) => {
   return (
+    <Animatable.View animation="zoomIn" iterationCount={1}>
     <View style={[styles.backgroundStyle, { ...backgroundStyle }]}>
       <Feather
         name="search"
@@ -49,6 +51,7 @@ const SearchBar = ({
         />
       </TouchableOpacity>
     </View>
+      </Animatable.View>
   );
 };
 

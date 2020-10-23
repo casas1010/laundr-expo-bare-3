@@ -1,6 +1,50 @@
-import React, { Component } from "react";
-import { Dimensions, TouchableOpacity, Text, Image, View } from "react-native";
+import React, { Component, useRef } from "react";
+import * as Animatable from "react-native-animatable";
 
+import {
+  Dimensions,
+  Animated,
+  TouchableOpacity,
+  Text,
+  Image,
+  StyleSheet,
+  View,
+} from "react-native";
+
+export const FadeInView = (props) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 10001,
+    }).start();
+  }, [fadeAnim]);
+
+  return (
+    <Animated.View // Special animatable View
+      style={{
+        ...props.style,
+        opacity: fadeAnim, // Bind opacity to animated value
+      }}
+    >
+      {props.children}
+    </Animated.View>
+  );
+};
+
+
+
+const styles = StyleSheet.create({
+  logo: {
+    backgroundColor: "white",
+    height: 120,
+    width: 120,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 export const DIVIDER = (props) => {
   return (
@@ -99,14 +143,18 @@ export const BUTTON_TEXT = {
 
 export const BUTTON = (props) => {
   return (
+    <Animatable.View  animation="zoomIn" iterationCount={1}>
     <TouchableOpacity
       style={[BUTTON_CONTAINER, { ...props.style }]}
       onPress={props.onPress}
     >
-      <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>
-        {props.text || props.children}
-      </Text>
+      
+        <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>
+          {props.text || props.children}
+        </Text>
+    
     </TouchableOpacity>
+    </Animatable.View>
   );
 };
 

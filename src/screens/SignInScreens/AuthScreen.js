@@ -8,7 +8,7 @@ import {
   KEYBOARD_AWARE_SCROLL_VIEW_STYLE,
 } from "../../components/Items/";
 import Loader from "../../components/Loader";
-
+import * as Animatable from "react-native-animatable";
 import { connect } from "react-redux";
 import * as actions from "../../actions/";
 
@@ -21,8 +21,6 @@ const AuthScreen = (props) => {
     }
     locationAndTokenFlow();
     props.doAuthLogin(props);
-
-
   }, []);
 
   return (
@@ -33,7 +31,16 @@ const AuthScreen = (props) => {
         ...KEYBOARD_AWARE_SCROLL_VIEW_STYLE,
       }}
     >
-      <Loader />
+      <Animatable.View
+        animation="zoomIn"
+        iterationCount={1}
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Loader />
+      </Animatable.View>
     </View>
   );
 };

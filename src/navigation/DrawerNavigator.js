@@ -7,7 +7,7 @@ import AccountScreen from "../screens/DrawerScreens/AccountScreen";
 import HistoryScreen from "../screens/DrawerScreens/HistoryScreen";
 import NotificationsScreen from "../screens/DrawerScreens/NotificationsScreen";
 import ReferralScreen from "../screens/DrawerScreens/ReferralScreen";
-import PaymentScreen from "../screens/DrawerScreens/PaymentScreen";
+// import PaymentScreen from "../screens/DrawerScreens/PaymentScreen";
 import SubscriptionsScreen from "../screens/DrawerScreens/SubscriptionsScreen";
 import HelpScreen from "../screens/DrawerScreens/HelpScreen";
 import OrderDetailsScreen from "../screens/DrawerScreens/OrderDetailsScreen";
@@ -29,7 +29,7 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="Order Details" component={OrderDetailsScreen} options={{unmountOnBlur:true}}/>
       <Drawer.Screen name="Notifications" component={NotificationsScreen} options={{unmountOnBlur:true}}/>
       <Drawer.Screen name="Referrals" component={ReferralScreen} options={{unmountOnBlur:true}}/>
-      <Drawer.Screen name="Payment" component={PaymentScreen} options={{unmountOnBlur:true}}/>
+      {/* <Drawer.Screen name="Payment" component={PaymentScreen} options={{unmountOnBlur:true}}/> */}
       <Drawer.Screen name="Subscriptions" component={SubscriptionsScreen} options={{unmountOnBlur:true}}/>
       <Drawer.Screen name="Help" component={HelpScreen} />
     </Drawer.Navigator>

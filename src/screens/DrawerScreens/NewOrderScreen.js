@@ -19,7 +19,8 @@ import TimeModal from "../../components/TimeModal";
 import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
 import SearchBar from "../../components/SearchBar";
-import { GOOGLE_MAPS_KEY } from "../../key/";
+import { GOOGLE_MAPS_KEY, BASE_URL } from "../../key/";
+import axios from "axios";
 
 import {
   getLatLongFromAddress,
@@ -43,6 +44,7 @@ import {
   BUTTON_TEXT,
   SHADOW,
   DIVIDER,
+  FadeInView
 } from "../../components/Items/";
 
 import Header from "../../components/Header";
@@ -62,7 +64,25 @@ const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs*load
 const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs*load
 const NO_PLAN_MULTIPLIER = 1.5; // $/lbs*load
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const NewOrderScreen = (props) => {
+
+
   // screen variables
   const [index, setIndex] = useState(0);
 
@@ -89,6 +109,7 @@ const NewOrderScreen = (props) => {
   //
   // card #3 variables
   const [pickUpAddress, setPickUpAddress] = useState();
+  const [addressNote, setAddressNote] = useState("SAMPLE NOTE");
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
   const [loading, setLoading] = useState(true);
@@ -152,11 +173,11 @@ const NewOrderScreen = (props) => {
         next();
         break;
       case 5:
-        if(payment.brand === ""){
+        if (props.payment.brand === "") {
           props.navigation.navigate("Payment");
-        return;
+          return;
         }
-        completeAndSubmitOrder();
+        makePayment();
         break;
 
       default:
@@ -499,20 +520,20 @@ const NewOrderScreen = (props) => {
   });
 
   const flow_Payment_Subscription = () => {
-    subscription.plan = "Family";
-    console.log('Delete me')
-    console.log('Delete me')
-    console.log('Delete me')
-    console.log('Delete me')
-    console.log('Delete me')
-    console.log('Delete me')
-    console.log('Delete me')
+    // props.subscription.plan = "Family";
+    console.log("Delete me");
+    console.log("Delete me");
+    console.log("Delete me");
+    console.log("Delete me");
+    console.log("Delete me");
+    console.log("Delete me");
+    console.log("Delete me");
 
     // function sets the price equation to use to calculate
     // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
     const { payment, subscription } = props;
-    // console.log("payment:  ", payment);
-    // console.log("subscription:  ", subscription);
+    console.log("payment:  ", payment);
+    console.log("subscription:  ", subscription);
 
     // check user plan
     if (subscription.plan == "N/A") {
@@ -584,10 +605,75 @@ const NewOrderScreen = (props) => {
     return;
   };
 
-  const completeAndSubmitOrder = () => {
+  const makePayment = async () => {
+    console.log("makePayment() initiated");
+    // console.log('props.user:  ',props.user)
     // lbsLeft - lbsForJob < 0 ? finalCost : 0
     // lbsLeft - lbsForJob < 0 ? finalCost : 0
     // initiated API call here
+    // assume that the token for stripe is payment.regPaymentID
+
+    // axios.defaults.headers.common["token"] = token;
+
+    try {
+      const fakeData = {
+        email: props.user.email,
+        fname: props.user.fname,
+        lname: props.user.lname,
+        phone: props.user.phone,
+        coupon: "placeholder",
+        scented: scent,
+        delicates: delicate,
+        separate: separate,
+        towelsSheets: towelsSheets,
+        washerPrefs: preferecenNote,
+        address: pickUpAddress,
+        addressPrefs: addressNote,
+        loads: loadForJob,
+        pickupDate: pickUpDate,
+        pickupTime: displayTime,
+        created: new Date(),
+      };
+
+      console.log("dakeData:  ", fakeData);
+
+      const response = await axios.post(BASE_URL + "/api/order/placeOrder", {
+        ...fakeData,
+        // email: email,
+        // fname: fname,
+        // lname: lname,
+        // phone: phone,
+        // coupon: "placeholder",
+        // scented: scent,
+        // delicates: delicate,
+        // separate: separate,
+        // towelsSheets: towelsSheets,
+        // washerPrefs: preferecenNote,
+        // address: pickUpAddress,
+        // addressPrefs: addressNote,
+        // loads: loadForJob,
+        // pickupDate: pickUpDate,
+        // pickupTime: displayTime,
+        // created: new Date(),
+      });
+
+      if (response.data.success) {
+        console.log("new order succesful");
+        console.log(" response.data.orderID:   ", response.data.orderID);
+        // return { success: true, message: response.data.orderID };
+      } else {
+        // return { success: false, message: response.data.message };
+        console.log("fail");
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      // showConsoleError("placing order: ", error);
+      console.log("error:  ", error);
+      // return {
+      //   success: false,
+      //   message: caughtError("placing order", error, 99),
+      // };
+    }
   };
 
   useEffect(() => {
@@ -1096,8 +1182,22 @@ const NewOrderScreen = (props) => {
               {/* old searchbar below, just in case this search bar does not work */}
 
               {displayAutoCompletePossibleLocations()}
+       
             </>
           </View>
+          
+          <TextInput
+                value={preferecenNote}
+                onChangeText={(txt) => setPreferenceNote(txt)}
+                maxLength={500}
+                multiline={true}
+                placeholder="Special delivery instructions"
+                style={[
+                  FIELD_VALUE_CONTAINER,
+                  { width: "100%", height: HEIGHT * 0.06,backgroundColor:'#f9f9f9', position: "absolute",
+                  bottom: 22, },
+                ]}
+              />
         </View>
       ),
 
@@ -1457,8 +1557,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function mapStateToProps({ payment, subscription }) {
-  return { payment, subscription };
+function mapStateToProps({ payment, subscription, user }) {
+  return { payment, subscription, user };
 }
 export default connect(mapStateToProps)(NewOrderScreen);
 

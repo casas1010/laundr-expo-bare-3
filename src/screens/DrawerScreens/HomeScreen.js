@@ -23,6 +23,8 @@ import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 
+import * as Animatable from "react-native-animatable";
+
 import {
   getLatLongFromAddress,
   verifyAddressIsInBounds,
@@ -30,6 +32,7 @@ import {
 import Container from "../../components/Container";
 import {
   HEIGHT,
+  FadeInView,
   WIDTH,
   SHADOW,
   KEYBOARD_AWARE_SCROLL_VIEW_STYLE,
@@ -57,7 +60,6 @@ const HomeScreen = (props) => {
     setAutoCompletePossibleLocations,
   ] = useState({ display: true, array: [] });
   const [error, setError] = useState("");
-
 
   useEffect(() => {
     console.log("useEffect() HomeScreen []");
@@ -87,9 +89,7 @@ const HomeScreen = (props) => {
       console.log("inside useEffect!");
       addresAutoComplete();
     }, 1200);
-
   }, [address]);
-
 
   const addresAutoComplete = async () => {
     console.log(`addresAutoComplete() initiated for address:  ${address} `);
@@ -250,8 +250,6 @@ const HomeScreen = (props) => {
     return <Text>Add Card</Text>;
   };
 
-
-
   return (
     <View style={styles.container}>
       <LoaderModal loading={loading} />
@@ -266,52 +264,59 @@ const HomeScreen = (props) => {
       >
         <Marker coordinate={newRegion} />
       </MapView>
+
       <View style={styles.topInputs_ButtonContainer}>
-        <TouchableOpacity onPress={props.navigation.openDrawer}>
-          <Entypo
-            name="menu"
-            size={50}
-            color="#01c9e2"
-            style={{ marginLeft: 10 }}
-          />
-        </TouchableOpacity>
         <>
-          <SearchBar
-            term={address}
-            onTermChange={(txt_address) => {
-              setAutoCompletePossibleLocations({
-                ...autoCompletePossibleLocations,
-                display: true,
-              });
-              setAddress(txt_address);
-            }}
-            placeholder="Search Locations"
-            onFocus={searchBarOnFocus}
-          />
+
+            <TouchableOpacity onPress={props.navigation.openDrawer}>
+              <Entypo
+                name="menu"
+                size={50}
+                color="#01c9e2"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+
+            <SearchBar
+              term={address}
+              onTermChange={(txt_address) => {
+                setAutoCompletePossibleLocations({
+                  ...autoCompletePossibleLocations,
+                  display: true,
+                });
+                setAddress(txt_address);
+              }}
+              placeholder="Search Locations"
+              onFocus={searchBarOnFocus}
+            />
+          
+
           {displayAutoCompletePossibleLocations()}
         </>
       </View>
-      <View style={styles.bottomButtonsContainer}>
-        <BUTTON onPress={newOrder} text="New Order" />
-        <View style={styles.bottomInnerButtonsContainer}>
-          <BUTTON
-            onPress={() => {
-              props.navigation.navigate("Payment");
-            }}
-            style={{ width: WIDTH * 0.4 }}
-          >
-            {paymentButtonText()}
-          </BUTTON>
 
-          <BUTTON
-            onPress={() => {
-              Linking.openURL("https://www.laundr.io/faq/");
-            }}
-            style={{ width: WIDTH * 0.4 }}
-            text="FAQ"
-          />
+        <View style={styles.bottomButtonsContainer}>
+          <BUTTON onPress={newOrder} text="New Order" />
+          <View style={styles.bottomInnerButtonsContainer}>
+            <BUTTON
+              onPress={() => {
+                props.navigation.navigate("Payment");
+              }}
+              style={{ width: WIDTH * 0.4 }}
+            >
+              {paymentButtonText()}
+            </BUTTON>
+
+            <BUTTON
+              onPress={() => {
+                Linking.openURL("https://www.laundr.io/faq/");
+              }}
+              style={{ width: WIDTH * 0.4 }}
+              text="FAQ"
+            />
+          </View>
         </View>
-      </View>
+     
       {/* </KeyboardAwareScrollView> */}
     </View>
   );

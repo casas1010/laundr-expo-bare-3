@@ -7,6 +7,7 @@ change lock to pencil with the word 'edit'
 add logout button
 
 */
+import * as Animatable from "react-native-animatable";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -104,6 +105,7 @@ const AccountScreen = (props) => {
 
       <Header openDrawer={props.navigation.openDrawer} name="Account" />
       {/* SCREEN LOCK  */}
+      
       <TouchableOpacity
         style={[styles.lockButton, { backgroundColor: lockColor }]}
         onPress={() => setLock(!lock)}
