@@ -51,7 +51,7 @@ const DATA = [
 const NotificationsScreen = (props) => {
   return (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
-      <Header openDrawer={props.navigation.openDrawer} name="Notifications" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="Notifications" />
       <FlatList
         data={DATA}
         keyExtractor={(item) => item.id}

@@ -68,7 +68,7 @@ const DIVIDER = () => {
 const OrderDetailsScreen = (props) => {
   return (
     <View>
-      <Header openDrawer={props.navigation.openDrawer} name="History" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="History" />
       <FlatList
         data={DATA}
         keyExtractor={(item) => item.orderId}

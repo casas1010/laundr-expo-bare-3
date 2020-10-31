@@ -79,7 +79,7 @@
 
 //     return (
 //       <SafeAreaView style={GlobalStyles.droidSafeArea}>
-//         <Header openDrawer={this.props.navigation.openDrawer} name="Account" />
+//         <Header openDrawer={this.() => props.navigation.navigate("Home")} name="Account" />
 
 //         <View style={styles.container}>
 //           <Text style={styles.header}>Card Form Example</Text>

@@ -148,7 +148,7 @@ const SubscriptionsChoices = (props) => {
     </View>
   ) : (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
-      <Header openDrawer={props.navigation.openDrawer} name="Subscriptions" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="Subscriptions" />
       <FlatList
         horizontal={false}
         data={PLANS}

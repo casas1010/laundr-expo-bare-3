@@ -1,29 +1,22 @@
 //        TEST DIFFERNT LAG TIMES FOR ADDRESS AUTODISPLAY
 //        .5 SECONDS SHOULD BE GOOD?
+// remove boing animation
 
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
 import {
-  Button,
   FlatList,
   StyleSheet,
   Text,
-  TextInput,
   View,
   TouchableOpacity,
   Linking,
-  Image,
   Dimensions,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { AntDesign } from "@expo/vector-icons";
 import { BUTTON } from "../../components/Items/";
 import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-
-import * as Animatable from "react-native-animatable";
 
 import {
   getLatLongFromAddress,
@@ -32,28 +25,23 @@ import {
 import Container from "../../components/Container";
 import {
   HEIGHT,
-  FadeInView,
   WIDTH,
   SHADOW,
-  KEYBOARD_AWARE_SCROLL_VIEW_STYLE,
 } from "../../components/Items/";
 import { GOOGLE_MAPS_KEY } from "../../key/";
 import SearchBar from "../../components/SearchBar";
 import LoaderModal from "../../components/LoaderModal";
-let addresAutoCompleteCount = 1;
-let loadCount = 1;
-// future improvement: use axios on API calls
+
 let acTimeout;
 const HomeScreen = (props) => {
-  console.log("HomeScreen is loaded");
-  console.log("number of times loaded:", loadCount);
-  loadCount = loadCount + 1;
+
   const [loading, setLoading] = useState(false);
 
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
 
   const [userAddress, setUserAddress] = useState();
+  const [pickedAddressFromDropDown, setPickedAddressFromDropDown] = useState('');
   const [address, setAddress] = useState();
   const [
     autoCompletePossibleLocations,
@@ -72,6 +60,7 @@ const HomeScreen = (props) => {
     setUserAddress(userLocation);
     console.log("setting address state variable");
     setAddress(userLocation);
+    setPickedAddressFromDropDown(userLocation || '')
     console.log("setUserLocation() complete");
   };
   function goToInitialLocation() {
@@ -83,7 +72,6 @@ const HomeScreen = (props) => {
   }
   useEffect(() => {
     console.log("HomeScreen useEffect() [address]");
-
     clearTimeout(acTimeout);
     acTimeout = setTimeout(function () {
       console.log("inside useEffect!");
@@ -118,11 +106,6 @@ const HomeScreen = (props) => {
       return;
     }
 
-    console.log(
-      "number of times addresAutoComplete() loaded:  ",
-      addresAutoCompleteCount
-    );
-    addresAutoCompleteCount++;
 
     console.log("initiating API call for address:  ", address);
     let possibleLocations = [];
@@ -141,12 +124,12 @@ const HomeScreen = (props) => {
     console.log("auto complete for input address & API complete");
     console.log(`possibleLocations size:  `, possibleLocations.length);
     console.log("updating the state variable autoCompletePossibleLocations");
-    let obj = {
-      ...autoCompletePossibleLocations,
-      array: [...possibleLocations],
-    };
-    setAutoCompletePossibleLocations(obj);
-    // setAutoCompletePossibleLocations({...autoCompletePossibleLocations,array:[...possibleLocations]});
+    // let obj = {
+    //   ...autoCompletePossibleLocations,
+    //   array: [...possibleLocations],
+    // };
+    // setAutoCompletePossibleLocations(obj);
+    setAutoCompletePossibleLocations({...autoCompletePossibleLocations,array:[...possibleLocations]});
   };
 
   const setNewRegionHelper = async (adr) => {
@@ -167,21 +150,20 @@ const HomeScreen = (props) => {
 
   const newOrder = async () => {
     console.log("newOrder() initiated");
-    // setLoading(true);
-    const location = await getLatLongFromAddress(address);
-    // setLoading(false);
-    if (location === null) {
-      alert("Please enter an address to proceed");
+    console.log('pickedAddressFromDropDown:  ',pickedAddressFromDropDown)
+    if(pickedAddressFromDropDown==='' ||pickedAddressFromDropDown!==address ){
+      alert("Please enter an address, then pick a suggested address from the dropdown");
       console.log("exiting newOrder()");
-
-      return;
+      return
     }
+    const location = await getLatLongFromAddress(pickedAddressFromDropDown);
 
-    // setLoading(true);
+
     const addressVerificatioBoolean = await verifyAddressIsInBounds(location);
-    // setLoading(false);
+
     console.log("addressVerificatioBoolean:   ", addressVerificatioBoolean);
     if (!addressVerificatioBoolean) {
+      
       console.log("user is out of range");
       alert(
         `Sorry!  You are currently out of Lanndr' active service area. Visit the site to request Landr at your location`
@@ -190,16 +172,11 @@ const HomeScreen = (props) => {
     }
 
     console.log("user is in range!");
-    props.navigation.navigate("New Order Screen", { address, location });
+    props.navigation.navigate("New Order Screen", { address: pickedAddressFromDropDown, location });
   };
 
   const displayAutoCompletePossibleLocations = () => {
     console.log("displayAutoCompletePossibleLocations()");
-    console.log(
-      "display possible locations under search bar?  ",
-      autoCompletePossibleLocations.display
-    );
-    console.log("array size: ", autoCompletePossibleLocations.array.length);
     return autoCompletePossibleLocations.display ? (
       <FlatList
         data={autoCompletePossibleLocations.array}
@@ -216,6 +193,7 @@ const HomeScreen = (props) => {
               onPress={() => {
                 console.log(`item pressed:   ${item}`);
                 setAddress(item);
+                setPickedAddressFromDropDown(item)
                 setAutoCompletePossibleLocations({ display: false, array: [] });
                 setNewRegionHelper(item);
               }}
@@ -262,61 +240,64 @@ const HomeScreen = (props) => {
         onMapReady={goToInitialLocation}
         initialRegion={initialRegion}
       >
-        <Marker coordinate={newRegion} />
+        {/* <Marker coordinate={newRegion} /> */}
       </MapView>
 
       <View style={styles.topInputs_ButtonContainer}>
         <>
-
-            <TouchableOpacity onPress={props.navigation.openDrawer}>
-              <Entypo
-                name="menu"
-                size={50}
-                color="#01c9e2"
-                style={{ marginLeft: 10 }}
-              />
-            </TouchableOpacity>
-
-            <SearchBar
-              term={address}
-              onTermChange={(txt_address) => {
-                setAutoCompletePossibleLocations({
-                  ...autoCompletePossibleLocations,
-                  display: true,
-                });
-                setAddress(txt_address);
-              }}
-              placeholder="Search Locations"
-              onFocus={searchBarOnFocus}
+          <TouchableOpacity onPress={props.navigation.openDrawer}>
+            <Entypo
+              name="menu"
+              size={50}
+              color="#01c9e2"
+              style={{ marginLeft: 10 }}
             />
-          
+          </TouchableOpacity>
+
+          <SearchBar
+            term={address}
+            onTermChange={(txt_address) => {
+              setAutoCompletePossibleLocations({
+                ...autoCompletePossibleLocations,
+                display: true,
+              });
+              setAddress(txt_address);
+            }}
+            placeholder="Search Locations"
+            onFocus={searchBarOnFocus}
+            clear={()=>{
+              setAddress(''); 
+              setPickedAddressFromDropDown('')
+
+            }}
+          />
 
           {displayAutoCompletePossibleLocations()}
         </>
       </View>
 
-        <View style={styles.bottomButtonsContainer}>
-          <BUTTON onPress={newOrder} text="New Order" />
-          <View style={styles.bottomInnerButtonsContainer}>
-            <BUTTON
-              onPress={() => {
-                props.navigation.navigate("Payment");
-              }}
-              style={{ width: WIDTH * 0.4 }}
-            >
-              {paymentButtonText()}
-            </BUTTON>
+      <View style={styles.bottomButtonsContainer}>
+        <BUTTON onPress={newOrder} text="New Order" />
+        <View style={styles.bottomInnerButtonsContainer}>
+          <BUTTON
+            onPress={() => {
+              props.navigation.navigate("Payment");
+            }}
+            style={{ width: WIDTH * 0.4 }}
+          >
+            {paymentButtonText()}
+          </BUTTON>
 
-            <BUTTON
-              onPress={() => {
-                Linking.openURL("https://www.laundr.io/faq/");
-              }}
-              style={{ width: WIDTH * 0.4 }}
-              text="FAQ"
-            />
-          </View>
+          <BUTTON
+            onPress={() => {
+              Linking.openURL("https://www.laundr.io/faq/");
+            }}
+            style={{ width: WIDTH * 0.4 }}
+            text="FAQ"
+          />
         </View>
-     
+      </View>
+
       {/* </KeyboardAwareScrollView> */}
     </View>
   );

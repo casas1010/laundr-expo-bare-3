@@ -57,7 +57,7 @@ const ReferralScreen = (props) => {
 
   return (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
-      <Header openDrawer={props.navigation.openDrawer} name="Referrals" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="Referrals" />
       <Container>
         <Text style={FIELD_NAME_TEXT}>Share your referral code!</Text>
         <Text style={styles.bodyText}>

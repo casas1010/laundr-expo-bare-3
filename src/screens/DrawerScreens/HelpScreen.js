@@ -39,7 +39,7 @@ const HelpScreen = (props) => {
 
   return (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
-      <Header openDrawer={props.navigation.openDrawer} name="Help" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="Help" />
       <KeyboardAwareScrollView
         resetScrollToCoords={{ x: 0, y: 0 }}
         contentContainerStyle={styles.container}

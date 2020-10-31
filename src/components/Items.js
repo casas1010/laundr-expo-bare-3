@@ -1,5 +1,5 @@
 import React, { Component, useRef } from "react";
-import * as Animatable from "react-native-animatable";
+// import * as Animatable from "react-native-animatable";
 
 import {
   Dimensions,
@@ -22,18 +22,16 @@ export const FadeInView = (props) => {
   }, [fadeAnim]);
 
   return (
-    <Animated.View // Special animatable View
-      style={{
+    <View
+      style=
+      {{
         ...props.style,
         opacity: fadeAnim, // Bind opacity to animated value
       }}
-    >
-      {props.children}
-    </Animated.View>
+      >{props.children}
+    </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   logo: {
@@ -143,18 +141,14 @@ export const BUTTON_TEXT = {
 
 export const BUTTON = (props) => {
   return (
-    <Animatable.View  animation="zoomIn" iterationCount={1}>
-    <TouchableOpacity
-      style={[BUTTON_CONTAINER, { ...props.style }]}
-      onPress={props.onPress}
-    >
-      
+      <TouchableOpacity
+        style={[BUTTON_CONTAINER, { ...props.style }]}
+        onPress={props.onPress}
+      >
         <Text style={[BUTTON_TEXT, { ...props.textStyle }]}>
           {props.text || props.children}
         </Text>
-    
-    </TouchableOpacity>
-    </Animatable.View>
+      </TouchableOpacity>
   );
 };
 

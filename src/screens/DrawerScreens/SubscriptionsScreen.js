@@ -312,7 +312,7 @@ const SubscriptionsScreen = (props) => {
   ) : (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
       <Header
-        openDrawer={props.navigation.openDrawer}
+        openDrawer={() => props.navigation.navigate("Home")}
         name={view == 0 ? "Subscriptions" : "Subscription Details"}
       />
       {returnView()}

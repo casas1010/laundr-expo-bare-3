@@ -44,7 +44,7 @@ import {
   BUTTON_TEXT,
   SHADOW,
   DIVIDER,
-  FadeInView
+  FadeInView,
 } from "../../components/Items/";
 
 import Header from "../../components/Header";
@@ -53,6 +53,8 @@ import Container from "../../components/Container";
 import moment from "moment";
 
 const TODAYS_DATE = new Date();
+var DAY_NUMBER = TODAYS_DATE.getDay();
+
 var DATE = TODAYS_DATE.getDate();
 var MONTH = TODAYS_DATE.getMonth() + 1;
 var HOUR = TODAYS_DATE.getHours(); //To get the Current Hours
@@ -63,29 +65,10 @@ const _WIDTH = WIDTH * 0.35;
 const FAMILY_PLAN_MULTIPLIER = 1.2; // $/lbs*load
 const NOT_FAMILY_PLAN_MULTIPLIER = 1.5; // $/lbs*load
 const NO_PLAN_MULTIPLIER = 1.5; // $/lbs*load
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let AC_TIMEOUT;
 const NewOrderScreen = (props) => {
-
-
   // screen variables
   const [index, setIndex] = useState(0);
-
   //
   // card #1 variables
   const [pickUpDate, setPickUpDate] = useState({ month: MONTH, date: DATE });
@@ -104,12 +87,15 @@ const NewOrderScreen = (props) => {
   const [delicate, setDelicate] = useState(false);
   const [separate, setSeparate] = useState(false);
   const [towelsSheets, setTowelsSheets] = useState(false);
-  const [preferecenNote, setPreferenceNote] = useState();
+  const [preferecenNote, setPreferenceNote] = useState("");
 
   //
   // card #3 variables
+  const [pickUpAddressFromDropDown, setPickUpAddressFromDropDown] = useState(
+    "placeHolder"
+  );
   const [pickUpAddress, setPickUpAddress] = useState();
-  const [addressNote, setAddressNote] = useState("SAMPLE NOTE");
+  const [addressNote, setAddressNote] = useState("");
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
   const [loading, setLoading] = useState(true);
@@ -134,12 +120,19 @@ const NewOrderScreen = (props) => {
     withSubscription: 9.7,
   });
 
+  // useEffect(() => {
+  //   // setLbsLeft(props.subscription.lbsLeft);
+  //   console.log("CHANGE THIS");
+  //   console.log("CHANGE THIS");
+  //   console.log("CHANGE THIS");
+  //   setLbsLeft(20);
+  // }, []);
+
   //
   // card #5
 
   //
   // screen functions
-
   const nextHelper = async () => {
     const indexOnScreen = index + 1;
     switch (indexOnScreen) {
@@ -151,8 +144,13 @@ const NewOrderScreen = (props) => {
         next();
         break;
       case 3:
-        if (pickUpAddress === "") {
-          alert("Please enter an address to proceed");
+        if (
+          pickUpAddress === "" ||
+          pickUpAddressFromDropDown !== pickUpAddress
+        ) {
+          alert(
+            "Please enter an address, then pick a suggested address from the dropdown"
+          );
           break;
         }
         const location = await getLatLongFromAddress(pickUpAddress);
@@ -223,6 +221,27 @@ const NewOrderScreen = (props) => {
     console.log("setDate()");
     console.log("date set for laundry:  ", dateDetails);
     setPickUpDate(dateDetails);
+  };
+
+  const getDayValueFromNumber = (DAY_NUMBER) => {
+    switch (DAY_NUMBER) {
+      case 0:
+        return "Sunday";
+      case 1:
+        return "Monday";
+      case 2:
+        return "Tuesday";
+      case 3:
+        return "Wednesday";
+      case 4:
+        return "Thursday";
+      case 5:
+        return "Friday";
+      case 6:
+        return "Saturday";
+      case 7:
+        return "Sunday";
+    }
   };
 
   const onTimeChange = (event, selectedDate) => {
@@ -385,6 +404,7 @@ const NewOrderScreen = (props) => {
   // card #3 functions
   useEffect(() => {
     setPickUpAddress(props.route.params.address);
+    setPickUpAddressFromDropDown(props.route.params.address);
   }, []);
 
   // functions that run the first time page loads
@@ -404,6 +424,15 @@ const NewOrderScreen = (props) => {
     this.mapView.animateToRegion(initialRegion, 2000);
     console.log("goToInitialLocation() complete");
   }
+
+  useEffect(() => {
+    console.log("HomeScreen useEffect() [address]");
+    clearTimeout(AC_TIMEOUT);
+    AC_TIMEOUT = setTimeout(function () {
+      console.log("inside useEffect!");
+      addresAutoComplete();
+    }, 1200);
+  }, [pickUpAddress]);
 
   const addresAutoComplete = async () => {
     console.log(
@@ -425,7 +454,7 @@ const NewOrderScreen = (props) => {
     console.log("initiating API call for pickUpAddress:  ", pickUpAddress);
     let possibleLocations = [];
     let sanitizedAddress = pickUpAddress.replace(/ /g, "+");
-    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${sanitizedAddress}&key=${GOOGLE_MAPS_KEY}`;
+    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${sanitizedAddress}&components=country:us&key=${GOOGLE_MAPS_KEY}`;
     await fetch(url)
       .then((response) => response.json())
       .then((data) => {
@@ -483,7 +512,7 @@ const NewOrderScreen = (props) => {
             <TouchableOpacity
               onPress={() => {
                 console.log(`item pressed:   ${item}`);
-
+                setPickUpAddressFromDropDown(item);
                 setPickUpAddress(item);
                 setAutoCompletePossibleLocations({ display: false, array: [] });
                 setNewRegionHelper(item);
@@ -676,13 +705,89 @@ const NewOrderScreen = (props) => {
     }
   };
 
-  useEffect(() => {
-    // setLbsLeft(props.subscription.lbsLeft);
-    console.log("CHANGE THIS");
-    console.log("CHANGE THIS");
-    console.log("CHANGE THIS");
-    setLbsLeft(20);
-  }, []);
+  const displayAddressNote = () => {
+    if(addressNote.length>0){
+      return (
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Address Note:</Text>
+          </View>
+          <View
+            style={[
+              styles.fieldValueContainer,
+              {
+                flexDirection: "column",
+                alignItems: "flex-end",
+              },
+            ]}
+          >
+            <Text style={styles.fieldValueTxT}>{addressNote}</Text>
+          </View>
+        </View>
+      );
+    }
+
+  };
+
+  const displayPreferences = () => {
+    const preferencesArray = [
+      scent ? "Scented" : null,
+      delicate ? "Delicates" : null,
+      separate ? "Separate" : null,
+      towelsSheets ? "Towels/Sheets" : null,
+    ];
+
+    const preferencesArrayString = preferencesArray
+      .filter((word) => word !== null)
+      .toString();
+    if (preferencesArrayString.length > 0) {
+      return (
+        <View style={styles.fieldContainer}>
+          <View
+            style={[styles.fieldNameContainer, { justifyContent: "center" }]}
+          >
+            <Text style={styles.fieldNameTxT}>Preferences:</Text>
+          </View>
+          <View
+            style={[
+              styles.fieldValueContainer,
+              { flexDirection: "column", alignItems: "flex-end" },
+            ]}
+          >
+            <Text style={styles.fieldValueTxT}>{preferencesArrayString}</Text>
+          </View>
+        </View>
+      );
+    }
+  };
+
+  const displayPreferenceNote = () => {
+    if (preferecenNote.length > 0) {
+      return (
+        <>
+          <View style={styles.fieldContainer}>
+            <View style={styles.fieldNameContainer}>
+              <Text style={styles.fieldNameTxT}>Preferences Note:</Text>
+            </View>
+            <View style={styles.fieldValueContainer}>
+              <Text style={styles.fieldValueTxT}>
+                {preferecenNote ? preferecenNote : null}
+              </Text>
+            </View>
+          </View>
+          <DIVIDER />
+        </>
+      );
+    }
+  };
+
+  // useEffect(() => {
+  //   // setLbsLeft(props.subscription.lbsLeft);
+  //   console.log("CHANGE THIS");
+  //   console.log("CHANGE THIS");
+  //   console.log("CHANGE THIS");
+  //   setLbsLeft(20);
+  // }, []);
 
   useEffect(() => {
     setPriceBasedOnLoadNumber(loadForJob);
@@ -947,7 +1052,13 @@ const NewOrderScreen = (props) => {
                     pickUpDate.date == DATE ? "#01c9e2" : "#f8f9fa",
                 },
               ]}
-              onPress={() => setDay({ month: MONTH, date: DATE })}
+              onPress={() =>
+                setDay({
+                  day: getDayValueFromNumber(DAY_NUMBER),
+                  month: MONTH,
+                  date: DATE,
+                })
+              }
             >
               <Text
                 style={{
@@ -968,7 +1079,13 @@ const NewOrderScreen = (props) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => setDay({ month: MONTH, date: DATE + 1 })}
+              onPress={() =>
+                setDay({
+                  day: getDayValueFromNumber(DAY_NUMBER + 1),
+                  month: MONTH,
+                  date: DATE + 1,
+                })
+              }
               style={[
                 styles.container_date,
                 {
@@ -1139,7 +1256,7 @@ const NewOrderScreen = (props) => {
           <TextInput
             value={preferecenNote}
             onChangeText={(txt) => setPreferenceNote(txt)}
-            maxLength={500}
+            maxLength={300}
             multiline={true}
             placeholder="Special Instructions"
             style={[
@@ -1163,7 +1280,7 @@ const NewOrderScreen = (props) => {
             onMapReady={goToInitialLocation}
             initialRegion={initialRegion}
           >
-            <Marker coordinate={newRegion} />
+            {/* <Marker coordinate={newRegion} /> */}
           </MapView>
           <View style={styles.topInputs_ButtonContainer}>
             <>
@@ -1177,27 +1294,34 @@ const NewOrderScreen = (props) => {
                   setPickUpAddress(txt_address);
                 }}
                 onFocus={searchBarOnFocus}
-                // onBlur={searchBarOnBlur}
+                clear={() => {
+                  setPickUpAddress("");
+                  setPickUpAddressFromDropDown("");
+                }}
               />
               {/* old searchbar below, just in case this search bar does not work */}
 
               {displayAutoCompletePossibleLocations()}
-       
             </>
           </View>
-          
+
           <TextInput
-                value={preferecenNote}
-                onChangeText={(txt) => setPreferenceNote(txt)}
-                maxLength={500}
-                multiline={true}
-                placeholder="Special delivery instructions"
-                style={[
-                  FIELD_VALUE_CONTAINER,
-                  { width: "100%", height: HEIGHT * 0.06,backgroundColor:'#f9f9f9', position: "absolute",
-                  bottom: 22, },
-                ]}
-              />
+            value={addressNote}
+            onChangeText={(txt) => setAddressNote(txt)}
+            maxLength={300}
+            multiline={true}
+            placeholder="Special delivery instructions"
+            style={[
+              FIELD_VALUE_CONTAINER,
+              {
+                width: "100%",
+                height: HEIGHT * 0.06,
+                backgroundColor: "#f9f9f9",
+                position: "absolute",
+                bottom: 22,
+              },
+            ]}
+          />
         </View>
       ),
 
@@ -1230,13 +1354,6 @@ const NewOrderScreen = (props) => {
     {
       element: (
         <ScrollView showsHorizontalScrollIndicator={false}>
-          <Text style={{ textAlign: "center", ...FIELD_VALUE_TEXT }}>
-            Please verify the information below
-          </Text>
-          <DIVIDER
-            style={{ margin: 15, backgroundColor: "black", width: "50%" }}
-          />
-
           <View style={styles.fieldContainer}>
             <View style={styles.fieldNameContainer}>
               <Text style={styles.fieldNameTxT}>Address:</Text>
@@ -1251,26 +1368,15 @@ const NewOrderScreen = (props) => {
               ]}
             >
               <Text style={[styles.fieldValueTxT, { color: "red" }]}>
-                {pickUpAddress}
+                {pickUpAddressFromDropDown.split(",")[0] || null}
               </Text>
             </View>
           </View>
 
+          {displayAddressNote()}
           {/*  */}
           <DIVIDER />
-          {/*  */}
-          <View style={styles.fieldContainer}>
-            <View style={styles.fieldNameContainer}>
-              <Text style={styles.fieldNameTxT}>Pickup Date:</Text>
-            </View>
-            <View style={styles.fieldValueContainer}>
-              <Text style={styles.fieldValueTxT}>
-                {pickUpDate.month}/{pickUpDate.date}
-              </Text>
-            </View>
-          </View>
-          {/*  */}
-          <DIVIDER />
+
           {/*  */}
           <View style={styles.fieldContainer}>
             <View style={styles.fieldNameContainer}>
@@ -1283,7 +1389,7 @@ const NewOrderScreen = (props) => {
             </View>
           </View>
           {/*  */}
-          <DIVIDER />
+
           {/*  */}
           <View style={styles.fieldContainer}>
             <View style={styles.fieldNameContainer}>
@@ -1291,53 +1397,19 @@ const NewOrderScreen = (props) => {
             </View>
             <View style={styles.fieldValueContainer}>
               <Text style={styles.fieldValueTxT}>
-                {pickUpDate.month}/{pickUpDate.date}
+                {[pickUpDate.day]}, {pickUpDate.month}/{pickUpDate.date}
               </Text>
             </View>
           </View>
           {/*  */}
           <DIVIDER />
           {/*  */}
-          <View style={styles.fieldContainer}>
-            <View
-              style={[styles.fieldNameContainer, { justifyContent: "center" }]}
-            >
-              <Text style={styles.fieldNameTxT}>Preferences:</Text>
-            </View>
-            <View
-              style={[
-                styles.fieldValueContainer,
-                { flexDirection: "column", alignItems: "flex-end" },
-              ]}
-            >
-              <Text style={styles.fieldValueTxT}>
-                {scent ? "Scented" : null}
-              </Text>
-              <Text style={styles.fieldValueTxT}>
-                {delicate ? "Delicates" : null}
-              </Text>
-              <Text style={styles.fieldValueTxT}>
-                {separate ? "Separate" : null}
-              </Text>
-              <Text style={styles.fieldValueTxT}>
-                {towelsSheets ? "Towels/Sheets" : null}
-              </Text>
-            </View>
-          </View>
+          {displayPreferences()}
           {/*  */}
           {/*  */}
-          <View style={styles.fieldContainer}>
-            <View style={styles.fieldNameContainer}>
-              <Text style={styles.fieldNameTxT}>Preferences Note:</Text>
-            </View>
-            <View style={styles.fieldValueContainer}>
-              <Text style={styles.fieldValueTxT}>
-                {preferecenNote ? preferecenNote : "No preference note"}
-              </Text>
-            </View>
-          </View>
+          {displayPreferenceNote()}
           {/*  */}
-          <DIVIDER />
+
           {/*  */}
           <View style={styles.fieldContainer}>
             <View style={styles.fieldNameContainer}>
@@ -1349,7 +1421,6 @@ const NewOrderScreen = (props) => {
               </Text>
             </View>
           </View>
-          <Text>lbsLeft - lbsForJob: {lbsLeft - lbsForJob}</Text>
         </ScrollView>
       ),
       id: "card #5",
@@ -1359,7 +1430,7 @@ const NewOrderScreen = (props) => {
   return (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
       <Header
-        openDrawer={props.navigation.openDrawer}
+        openDrawer={() => props.navigation.navigate("Home")}
         name={setHeaderText(index)}
       />
       <KeyboardAwareScrollView
@@ -1476,7 +1547,7 @@ const styles = StyleSheet.create({
   },
   fieldValueTxT: {
     fontSize: FIELD_VALUE_FONT_SIZE,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     paddingRight: 10,
   },
   container: {

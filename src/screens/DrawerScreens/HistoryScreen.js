@@ -1,3 +1,5 @@
+// REVERSE ORDER IN HISTORY, MAKE IT SO IT GOES BY DATE IN ORDER
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -79,7 +81,7 @@ const SearchScreen = (props) => {
 
   return (
     <SafeAreaView style={GlobalStyles.droidSafeArea}>
-      <Header openDrawer={props.navigation.openDrawer} name="History" />
+      <Header openDrawer={() => props.navigation.navigate("Home")} name="History" />
 
       <SearchBar
         term={term}

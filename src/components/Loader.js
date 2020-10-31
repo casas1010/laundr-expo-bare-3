@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import { HEIGHT, WIDTH } from "../../src/components/Items/";
 
-console.log(WIDTH * 0.25);
-console.log(WIDTH * 0.25 * 0.59);
+
 export default class Loader extends Component {
   UNSAFE_componentWillMount() {
     console.log('UNSAFE_componentWillMount() requires change')
